@@ -1,0 +1,3 @@
+1 of 359 attack clauses failed to parse.
+
+Kraken: clause='1d4 lightning bolt' full_attacks_raw='4 tentacle (near) +9 (2d12) or 1 storm or 1d4 lightning bolt'
