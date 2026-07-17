@@ -1,301 +1,301 @@
 sd_name,sd_id,candidate_rank,fe_candidate_name,fe_id,confidence
-Obe-Ixx of Azarumme,154,1,Ogre Zombie,211,0.414
-Obe-Ixx of Azarumme,154,2,Axe Beak,32,0.385
-Obe-Ixx of Azarumme,154,3,Adult Copper Dragon,7,0.162
-Mushroomfolk,150,1,Hunter Shark,169,0.417
-Mushroomfolk,150,2,Shrieker,254,0.4
-Mushroomfolk,150,3,Grimlock,155,0.3
-"Orc, Chieftain",160,1,Ancient Red Dragon,21,0.516
-"Orc, Chieftain",160,2,Chain Devil,61,0.5
-"Orc, Chieftain",160,3,Storm Giant,267,0.417
-Gorilla,103,1,Goat,146,0.545
-Gorilla,103,2,Grimlock,155,0.533
-Gorilla,103,3,Solar,257,0.5
-Siren,198,1,Stirge,264,0.727
-Siren,198,2,Raven,233,0.6
-Siren,198,3,Sprite,261,0.545
-"Demon, Vrock",52,1,Vrock,292,0.625
-"Demon, Vrock",52,2,Young Silver Dragon,320,0.467
-"Demon, Vrock",52,3,Iron Golem,176,0.381
-"Dragon, Fire",61,1,Dragon Turtle,85,0.75
-"Dragon, Fire",61,2,Young Red Dragon,319,0.667
-"Dragon, Fire",61,3,Adult Red Dragon,10,0.667
-"Viperian, Ophid",227,1,Half-Red Dragon Veteran,159,0.5
-"Viperian, Ophid",227,2,Cloud Giant,66,0.48
-"Viperian, Ophid",227,3,Veteran,290,0.476
-"Scarab, Swarm",190,1,Swarm of Rats,275,0.64
-"Scarab, Swarm",190,2,Swarm of Ravens,276,0.593
-"Scarab, Swarm",190,3,Swarm of Spiders,277,0.571
-"Hag, Weald",115,1,Sea Hag,249,0.75
-"Hag, Weald",115,2,Giant Weasel,140,0.571
-"Hag, Weald",115,3,Weasel,297,0.533
-Stingbat,209,1,Stirge,264,0.571
-Stingbat,209,2,Bat,41,0.545
-Stingbat,209,3,Frost Giant,107,0.526
-Rime Walker,183,1,Shrieker,254,0.632
-Rime Walker,183,2,Water Elemental,296,0.538
-Rime Walker,183,3,Grimlock,155,0.526
-Cave Creeper,33,1,Phase Spider,219,0.5
-Cave Creeper,33,2,Awakened Tree,31,0.48
-Cave Creeper,33,3,Ice Mephit,173,0.455
-Rot Flower,186,1,Iron Golem,176,0.5
-Rot Flower,186,2,Merrow,197,0.25
-Rot Flower,186,3,Brown Bear,55,0.2
-Pirate,168,1,Sprite,261,0.667
-Pirate,168,2,Raven,233,0.545
-Pirate,168,3,Giant Rat,131,0.533
-Fairy,77,1,Frog,106,0.444
-Fairy,77,2,Tiger,281,0.4
-Fairy,77,3,Solar,257,0.4
-"Goblin, Boss",96,1,Giant Boar,116,0.571
-"Goblin, Boss",96,2,Brass Dragon Wyrmling,53,0.562
-"Goblin, Boss",96,3,Frost Giant,107,0.545
-The Ten-Eyed Oracle,212,1,Stone Golem,266,0.56
-The Ten-Eyed Oracle,212,2,Nalfeshnee,204,0.5
-The Ten-Eyed Oracle,212,3,Sea Horse,250,0.435
-"Shark, Megalodon",197,1,Giant Shark,135,0.692
-"Shark, Megalodon",197,2,Reef Shark,235,0.56
-"Shark, Megalodon",197,3,Blood Hawk,49,0.56
-Apprentice,10,1,Weretiger,301,0.526
-Apprentice,10,2,Giant Ape,113,0.526
-Apprentice,10,3,Sprite,261,0.375
-"Demon, Marilith",51,1,Marilith,193,0.727
-"Demon, Marilith",51,2,Warhorse Skeleton,295,0.452
-"Demon, Marilith",51,3,Ice Devil,172,0.435
-"Spider, Swarm",208,1,Swarm of Spiders,277,0.857
-"Spider, Swarm",208,2,Swarm of Quippers,274,0.621
-"Spider, Swarm",208,3,Swarm of Centipedes,271,0.581
-"Dragon, Forest",62,1,Half-Red Dragon Veteran,159,0.629
-"Dragon, Forest",62,2,Young Red Dragon,319,0.621
-"Dragon, Forest",62,3,Adult Red Dragon,10,0.621
-"Lesser Elemental, Water",134,1,Water Elemental,296,0.811
-"Lesser Elemental, Water",134,2,Fire Elemental,101,0.611
-"Lesser Elemental, Water",134,3,Swarm of Beetles,270,0.526
+"Angel, Domini",3,1,Magmin,190,0.556
+"Angel, Domini",3,2,Ogre Zombie,211,0.522
+"Angel, Domini",3,3,Androsphinx,24,0.522
+"Angel, Principi",4,1,Night Hag,205,0.261
+"Angel, Principi",4,2,Giant Elk,122,0.174
+"Angel, Principi",4,3,Giant Badger,114,0.154
 "Angel, Seraph",5,1,Sea Hag,249,0.632
 "Angel, Seraph",5,2,Giant Sea Horse,134,0.519
 "Angel, Seraph",5,3,Giant Spider,136,0.5
-"Manta Ray, Giant",140,1,Giant Rat,131,0.667
-"Manta Ray, Giant",140,2,Giant Goat,125,0.64
-"Manta Ray, Giant",140,3,Giant Toad,137,0.56
-Deep One,47,1,Horned Devil,168,0.6
-Deep One,47,2,Deep Gnome (Svirfneblin),78,0.533
-Deep One,47,3,Stone Golem,266,0.526
-Beastman,23,1,Giant Bat,115,0.588
-Beastman,23,2,Bat,41,0.545
-Beastman,23,3,Veteran,290,0.533
-Void Spider,230,1,Giant Wolf Spider,141,0.571
-Void Spider,230,2,Phase Spider,219,0.522
-Void Spider,230,3,Giant Spider,136,0.522
+"Ape, Snow",9,1,Giant Ape,113,0.588
+"Ape, Snow",9,2,Giant Owl,129,0.471
+"Ape, Snow",9,3,Raven,233,0.462
+Apprentice,10,1,Weretiger,301,0.526
+Apprentice,10,2,Giant Ape,113,0.526
+Apprentice,10,3,Sprite,261,0.375
+Archangel,11,1,Chain Devil,61,0.6
+Archangel,11,2,Jackal,177,0.533
+Archangel,11,3,Sea Hag,249,0.5
+Archdevil,12,1,Chain Devil,61,0.7
+Archdevil,12,2,Barbed Devil,39,0.667
+Archdevil,12,3,Bearded Devil,42,0.636
 "Bat, Swarm",20,1,Swarm of Bats,269,0.818
 "Bat, Swarm",20,2,Swarm of Rats,275,0.727
 "Bat, Swarm",20,3,Swarm of Beetles,270,0.64
+Beastman,23,1,Giant Bat,115,0.588
+Beastman,23,2,Bat,41,0.545
+Beastman,23,3,Veteran,290,0.533
+Brachiosaurus,27,1,Tyrannosaurus Rex,286,0.6
+Brachiosaurus,27,2,Behir,43,0.444
+Brachiosaurus,27,3,Draft Horse,84,0.417
+Brain Eater,28,1,Shrieker,254,0.526
+Brain Eater,28,2,Giant Weasel,140,0.522
+Brain Eater,28,3,Planetar,221,0.105
+Cave Brute,32,1,Raven,233,0.533
+Cave Brute,32,2,Hunter Shark,169,0.455
+Cave Brute,32,3,Sea Horse,250,0.421
+Cave Creeper,33,1,Phase Spider,219,0.5
+Cave Creeper,33,2,Awakened Tree,31,0.48
+Cave Creeper,33,3,Ice Mephit,173,0.455
+"Centipede, Swarm",36,1,Swarm of Centipedes,271,0.882
+"Centipede, Swarm",36,2,Giant Centipede,117,0.733
+"Centipede, Swarm",36,3,Swarm of Spiders,277,0.581
+Cyclops,45,1,Octopus,209,0.571
+Cyclops,45,2,Giant Octopus,128,0.4
+Cyclops,45,3,Gynosphinx,158,0.353
+Deep One,47,1,Horned Devil,168,0.6
+Deep One,47,2,Deep Gnome (Svirfneblin),78,0.533
+Deep One,47,3,Stone Golem,266,0.526
+"Demon, Balor",48,1,Balor,36,0.625
+"Demon, Balor",48,2,Baboon,34,0.588
+"Demon, Balor",48,3,Brown Bear,55,0.571
+"Demon, Dretch",49,1,Dretch,86,0.667
+"Demon, Dretch",49,2,Fire Elemental,101,0.462
+"Demon, Dretch",49,3,Bone Devil,52,0.182
+"Demon, Glabrezu",50,1,Glabrezu,143,0.727
+"Demon, Glabrezu",50,2,Young Green Dragon,318,0.5
+"Demon, Glabrezu",50,3,Young Red Dragon,319,0.467
+"Demon, Marilith",51,1,Marilith,193,0.727
+"Demon, Marilith",51,2,Warhorse Skeleton,295,0.452
+"Demon, Marilith",51,3,Ice Devil,172,0.435
+"Demon, Vrock",52,1,Vrock,292,0.625
+"Demon, Vrock",52,2,Young Silver Dragon,320,0.467
+"Demon, Vrock",52,3,Iron Golem,176,0.381
+"Devil, Cubi",54,1,Chain Devil,61,0.762
+"Devil, Cubi",54,2,Bone Devil,52,0.7
+"Devil, Cubi",54,3,Barbed Devil,39,0.636
+"Devil, Erinyes",55,1,Erinyes,98,0.7
+"Devil, Erinyes",55,2,Ice Devil,172,0.636
+"Devil, Erinyes",55,3,Horned Devil,168,0.56
+"Devil, Imp",57,1,Ice Devil,172,0.778
+"Devil, Imp",57,2,Horned Devil,168,0.571
+"Devil, Imp",57,3,Bone Devil,52,0.526
+"Dragon, Desert",60,1,Pseudodragon,227,0.64
+"Dragon, Desert",60,2,Adult Copper Dragon,7,0.625
+"Dragon, Desert",60,3,Adult Red Dragon,10,0.621
+"Dragon, Fire",61,1,Dragon Turtle,85,0.75
+"Dragon, Fire",61,2,Young Red Dragon,319,0.667
+"Dragon, Fire",61,3,Adult Red Dragon,10,0.667
+"Dragon, Forest",62,1,Half-Red Dragon Veteran,159,0.629
+"Dragon, Forest",62,2,Young Red Dragon,319,0.621
+"Dragon, Forest",62,3,Adult Red Dragon,10,0.621
+"Dragon, Frost",63,1,Dragon Turtle,85,0.72
+"Dragon, Frost",63,2,Young Red Dragon,319,0.643
+"Dragon, Frost",63,3,Young Green Dragon,318,0.6
+"Dragon, Sea",64,1,Sea Hag,249,0.706
+"Dragon, Sea",64,2,Dragon Turtle,85,0.696
+"Dragon, Sea",64,3,Young Silver Dragon,320,0.621
+"Dragon, Swamp",65,1,Swarm of Ravens,276,0.593
+"Dragon, Swamp",65,2,Silver Dragon Wyrmling,255,0.588
+"Dragon, Swamp",65,3,Red Dragon Wyrmling,234,0.581
+"Drow, Drider",67,1,Drider,87,0.706
+"Drow, Drider",67,2,Merrow,197,0.588
+"Drow, Drider",67,3,Brown Bear,55,0.571
+"Drow, Priestess",68,1,Sprite,261,0.5
+"Drow, Priestess",68,2,Dragon Turtle,85,0.444
+"Drow, Priestess",68,3,Swarm of Rats,275,0.222
+"Dung Beetle, Giant",72,1,Giant Fire Beetle,123,0.765
+"Dung Beetle, Giant",72,2,Giant Eagle,121,0.643
+"Dung Beetle, Giant",72,3,Giant Badger,114,0.552
+Elf,75,1,Elk,97,0.667
+Elf,75,2,Eagle,93,0.5
+Elf,75,3,Dire Wolf,81,0.5
+Fairy,77,1,Frog,106,0.444
+Fairy,77,2,Tiger,281,0.4
+Fairy,77,3,Solar,257,0.4
+"Gnome, Deep",94,1,Deep Gnome (Svirfneblin),78,0.625
+"Gnome, Deep",94,2,Flesh Golem,103,0.476
+"Gnome, Deep",94,3,Giant Eagle,121,0.476
+"Goblin, Boss",96,1,Giant Boar,116,0.571
+"Goblin, Boss",96,2,Brass Dragon Wyrmling,53,0.562
+"Goblin, Boss",96,3,Frost Giant,107,0.545
+"Goblin, Shaman",97,1,Giant Shark,135,0.583
+"Goblin, Shaman",97,2,Stone Golem,266,0.5
+"Goblin, Shaman",97,3,Flying Snake,104,0.48
+Gorilla,103,1,Goat,146,0.545
+Gorilla,103,2,Grimlock,155,0.533
+Gorilla,103,3,Solar,257,0.5
+"Greater Elemental, Air",105,1,Water Elemental,296,0.778
+"Greater Elemental, Air",105,2,Air Elemental,13,0.765
+"Greater Elemental, Air",105,3,Fire Elemental,101,0.686
+"Greater Elemental, Earth",106,1,Earth Elemental,94,0.789
+"Greater Elemental, Earth",106,2,Water Elemental,296,0.737
+"Greater Elemental, Earth",106,3,Air Elemental,13,0.667
+"Greater Elemental, Fire",107,1,Fire Elemental,101,0.778
+"Greater Elemental, Fire",107,2,Water Elemental,296,0.757
+"Greater Elemental, Fire",107,3,Giant Fire Beetle,123,0.615
+"Greater Elemental, Water",108,1,Water Elemental,296,0.789
+"Greater Elemental, Water",108,2,Fire Elemental,101,0.649
+"Greater Elemental, Water",108,3,Air Elemental,13,0.5
+Grimlow,111,1,Grimlock,155,0.8
+Grimlow,111,2,Giant Owl,129,0.5
+Grimlow,111,3,Merrow,197,0.462
+"Hag, Weald",115,1,Sea Hag,249,0.75
+"Hag, Weald",115,2,Giant Weasel,140,0.571
+"Hag, Weald",115,3,Weasel,297,0.533
 Hippopotamus,119,1,Homunculus,167,0.455
 Hippopotamus,119,2,Octopus,209,0.421
 Hippopotamus,119,3,Steam Mephit,263,0.417
+Horse,121,1,Warhorse,294,0.769
+Horse,121,2,Sea Horse,250,0.714
+Horse,121,3,Draft Horse,84,0.625
 Jellyfish,124,1,Fire Elemental,101,0.435
 Jellyfish,124,2,Reef Shark,235,0.421
 Jellyfish,124,3,Nalfeshnee,204,0.316
-Thief,214,1,Tiger,281,0.6
-Thief,214,2,Stirge,264,0.545
-Thief,214,3,Shrieker,254,0.462
+"Kobold, Sorcerer",127,1,Stone Golem,266,0.462
+"Kobold, Sorcerer",127,2,Noble,207,0.4
+"Kobold, Sorcerer",127,3,Balor,36,0.4
+"Leech, Giant",129,1,Giant Owl,129,0.7
+"Leech, Giant",129,2,Giant Vulture,138,0.667
+"Leech, Giant",129,3,Giant Weasel,140,0.609
+Leprechaun,130,1,Lemure,183,0.5
+Leprechaun,130,2,Dretch,86,0.5
+Leprechaun,130,3,Veteran,290,0.471
+"Lesser Elemental, Air",131,1,Air Elemental,13,0.788
+"Lesser Elemental, Air",131,2,Water Elemental,296,0.686
+"Lesser Elemental, Air",131,3,Earth Elemental,94,0.686
+"Lesser Elemental, Earth",132,1,Earth Elemental,94,0.811
+"Lesser Elemental, Earth",132,2,Air Elemental,13,0.686
+"Lesser Elemental, Earth",132,3,Water Elemental,296,0.649
+"Lesser Elemental, Fire",133,1,Fire Elemental,101,0.8
+"Lesser Elemental, Fire",133,2,Water Elemental,296,0.667
+"Lesser Elemental, Fire",133,3,Air Elemental,13,0.529
+"Lesser Elemental, Water",134,1,Water Elemental,296,0.811
+"Lesser Elemental, Water",134,2,Fire Elemental,101,0.611
+"Lesser Elemental, Water",134,3,Swarm of Beetles,270,0.526
+"Manta Ray, Giant",140,1,Giant Rat,131,0.667
+"Manta Ray, Giant",140,2,Giant Goat,125,0.64
+"Manta Ray, Giant",140,3,Giant Toad,137,0.56
+Moose,147,1,Octopus,209,0.5
+Moose,147,2,Warhorse,294,0.462
+Moose,147,3,Commoner,68,0.462
 Mordanticus The Flayed,148,1,Flying Sword,105,0.467
 Mordanticus The Flayed,148,2,Giant Ape,113,0.444
 Mordanticus The Flayed,148,3,Cult Fanatic,74,0.4
+Mushroomfolk,150,1,Hunter Shark,169,0.417
+Mushroomfolk,150,2,Shrieker,254,0.4
+Mushroomfolk,150,3,Grimlock,155,0.3
+Naga,151,1,Sea Hag,249,0.545
+Naga,151,2,Spirit Naga,260,0.533
+Naga,151,3,Goat,146,0.25
+"Naga, Bone",152,1,Guardian Naga,157,0.545
+"Naga, Bone",152,2,Bone Devil,52,0.526
+"Naga, Bone",152,3,Giant Boar,116,0.316
+Obe-Ixx of Azarumme,154,1,Ogre Zombie,211,0.414
+Obe-Ixx of Azarumme,154,2,Axe Beak,32,0.385
+Obe-Ixx of Azarumme,154,3,Adult Copper Dragon,7,0.162
+"Orc, Chieftain",160,1,Ancient Red Dragon,21,0.516
+"Orc, Chieftain",160,2,Chain Devil,61,0.5
+"Orc, Chieftain",160,3,Storm Giant,267,0.417
 Peasant,164,1,Giant Ape,113,0.625
 Peasant,164,2,Giant Eagle,121,0.556
 Peasant,164,3,Planetar,221,0.533
 Phoenix,166,1,Pony,225,0.545
 Phoenix,166,2,Hyena,171,0.5
 Phoenix,166,3,Gynosphinx,158,0.471
-"Drow, Priestess",68,1,Sprite,261,0.5
-"Drow, Priestess",68,2,Dragon Turtle,85,0.444
-"Drow, Priestess",68,3,Swarm of Rats,275,0.222
-"Rat, Swarm",178,1,Swarm of Rats,275,0.818
-"Rat, Swarm",178,2,Swarm of Bats,269,0.727
-"Rat, Swarm",178,3,Swarm of Ravens,276,0.667
-"Demon, Dretch",49,1,Dretch,86,0.667
-"Demon, Dretch",49,2,Fire Elemental,101,0.462
-"Demon, Dretch",49,3,Bone Devil,52,0.182
-Horse,121,1,Warhorse,294,0.769
-Horse,121,2,Sea Horse,250,0.714
-Horse,121,3,Draft Horse,84,0.625
-"Greater Elemental, Air",105,1,Water Elemental,296,0.778
-"Greater Elemental, Air",105,2,Air Elemental,13,0.765
-"Greater Elemental, Air",105,3,Fire Elemental,101,0.686
-Tyrannosaurus,220,1,Tyrannosaurus Rex,286,0.867
-Tyrannosaurus,220,2,Tarrasque,279,0.455
-Tyrannosaurus,220,3,Giant Shark,135,0.417
-"Greater Elemental, Earth",106,1,Earth Elemental,94,0.789
-"Greater Elemental, Earth",106,2,Water Elemental,296,0.737
-"Greater Elemental, Earth",106,3,Air Elemental,13,0.667
-"Centipede, Swarm",36,1,Swarm of Centipedes,271,0.882
-"Centipede, Swarm",36,2,Giant Centipede,117,0.733
-"Centipede, Swarm",36,3,Swarm of Spiders,277,0.581
-Archdevil,12,1,Chain Devil,61,0.7
-Archdevil,12,2,Barbed Devil,39,0.667
-Archdevil,12,3,Bearded Devil,42,0.636
-"Dung Beetle, Giant",72,1,Giant Fire Beetle,123,0.765
-"Dung Beetle, Giant",72,2,Giant Eagle,121,0.643
-"Dung Beetle, Giant",72,3,Giant Badger,114,0.552
-"Greater Elemental, Fire",107,1,Fire Elemental,101,0.778
-"Greater Elemental, Fire",107,2,Water Elemental,296,0.757
-"Greater Elemental, Fire",107,3,Giant Fire Beetle,123,0.615
-"Dragon, Desert",60,1,Pseudodragon,227,0.64
-"Dragon, Desert",60,2,Adult Copper Dragon,7,0.625
-"Dragon, Desert",60,3,Adult Red Dragon,10,0.621
-Brachiosaurus,27,1,Tyrannosaurus Rex,286,0.6
-Brachiosaurus,27,2,Behir,43,0.444
-Brachiosaurus,27,3,Draft Horse,84,0.417
-Sphinx,205,1,Gynosphinx,158,0.75
-Sphinx,205,2,Androsphinx,24,0.706
-Sphinx,205,3,Sprite,261,0.5
-"Greater Elemental, Water",108,1,Water Elemental,296,0.789
-"Greater Elemental, Water",108,2,Fire Elemental,101,0.649
-"Greater Elemental, Water",108,3,Air Elemental,13,0.5
-Archangel,11,1,Chain Devil,61,0.6
-Archangel,11,2,Jackal,177,0.533
-Archangel,11,3,Sea Hag,249,0.5
-Moose,147,1,Octopus,209,0.5
-Moose,147,2,Warhorse,294,0.462
-Moose,147,3,Commoner,68,0.462
-"Dragon, Sea",64,1,Sea Hag,249,0.706
-"Dragon, Sea",64,2,Dragon Turtle,85,0.696
-"Dragon, Sea",64,3,Young Silver Dragon,320,0.621
-"Lesser Elemental, Earth",132,1,Earth Elemental,94,0.811
-"Lesser Elemental, Earth",132,2,Air Elemental,13,0.686
-"Lesser Elemental, Earth",132,3,Water Elemental,296,0.649
-Velociraptor,224,1,Giant Elk,122,0.476
-Velociraptor,224,2,Storm Giant,267,0.435
-Velociraptor,224,3,Lizard,186,0.333
-"Devil, Erinyes",55,1,Erinyes,98,0.7
-"Devil, Erinyes",55,2,Ice Devil,172,0.636
-"Devil, Erinyes",55,3,Horned Devil,168,0.56
+"Piranha, Swarm",167,1,Swarm of Ravens,276,0.643
+"Piranha, Swarm",167,2,Swarm of Spiders,277,0.621
+"Piranha, Swarm",167,3,Swarm of Rats,275,0.615
+Pirate,168,1,Sprite,261,0.667
+Pirate,168,2,Raven,233,0.545
+Pirate,168,3,Giant Rat,131,0.533
+Primordial Slime,171,1,Giant Constrictor Snake,118,0.462
+Primordial Slime,171,2,Shield Guardian,253,0.452
+Primordial Slime,171,3,Ice Devil,172,0.4
 Pterodactyl,172,1,Winter Wolf,306,0.455
 Pterodactyl,172,2,Veteran,290,0.444
 Pterodactyl,172,3,Specter,258,0.444
 "Rat, Dire",176,1,Fire Giant,102,0.667
 "Rat, Dire",176,2,Giant Rat,131,0.588
 "Rat, Dire",176,3,Dire Wolf,81,0.588
-"Goblin, Shaman",97,1,Giant Shark,135,0.583
-"Goblin, Shaman",97,2,Stone Golem,266,0.5
-"Goblin, Shaman",97,3,Flying Snake,104,0.48
-"Leech, Giant",129,1,Giant Owl,129,0.7
-"Leech, Giant",129,2,Giant Vulture,138,0.667
-"Leech, Giant",129,3,Giant Weasel,140,0.609
+"Rat, Swarm",178,1,Swarm of Rats,275,0.818
+"Rat, Swarm",178,2,Swarm of Bats,269,0.727
+"Rat, Swarm",178,3,Swarm of Ravens,276,0.667
 Rathgamnon,179,1,Giant Bat,115,0.526
 Rathgamnon,179,2,Stone Giant,265,0.381
 Rathgamnon,179,3,Giant Crab,119,0.3
 Reaver,180,1,Raven,233,0.727
 Reaver,180,2,Deer,79,0.6
 Reaver,180,3,Shrieker,254,0.571
-Cyclops,45,1,Octopus,209,0.571
-Cyclops,45,2,Giant Octopus,128,0.4
-Cyclops,45,3,Gynosphinx,158,0.353
-"Demon, Balor",48,1,Balor,36,0.625
-"Demon, Balor",48,2,Baboon,34,0.588
-"Demon, Balor",48,3,Brown Bear,55,0.571
-"Devil, Cubi",54,1,Chain Devil,61,0.762
-"Devil, Cubi",54,2,Bone Devil,52,0.7
-"Devil, Cubi",54,3,Barbed Devil,39,0.636
-"Piranha, Swarm",167,1,Swarm of Ravens,276,0.643
-"Piranha, Swarm",167,2,Swarm of Spiders,277,0.621
-"Piranha, Swarm",167,3,Swarm of Rats,275,0.615
-"Troll, Frost",219,1,Frost Giant,107,0.636
-"Troll, Frost",219,2,Dragon Turtle,85,0.5
-"Troll, Frost",219,3,Giant Frog,124,0.381
-"Snake, Giant",202,1,Stone Giant,265,0.818
-"Snake, Giant",202,2,Giant Shark,135,0.818
-"Snake, Giant",202,3,Giant Hyena,126,0.727
-Shark,196,1,Reef Shark,235,0.667
-Shark,196,2,Hawk,161,0.667
-Shark,196,3,Giant Shark,135,0.625
-"Angel, Domini",3,1,Magmin,190,0.556
-"Angel, Domini",3,2,Ogre Zombie,211,0.522
-"Angel, Domini",3,3,Androsphinx,24,0.522
-"Devil, Imp",57,1,Ice Devil,172,0.778
-"Devil, Imp",57,2,Horned Devil,168,0.571
-"Devil, Imp",57,3,Bone Devil,52,0.526
-"Angel, Principi",4,1,Night Hag,205,0.261
-"Angel, Principi",4,2,Giant Elk,122,0.174
-"Angel, Principi",4,3,Giant Badger,114,0.154
-"Drow, Drider",67,1,Drider,87,0.706
-"Drow, Drider",67,2,Merrow,197,0.588
-"Drow, Drider",67,3,Brown Bear,55,0.571
-"Naga, Bone",152,1,Guardian Naga,157,0.545
-"Naga, Bone",152,2,Bone Devil,52,0.526
-"Naga, Bone",152,3,Giant Boar,116,0.316
-Leprechaun,130,1,Lemure,183,0.5
-Leprechaun,130,2,Dretch,86,0.5
-Leprechaun,130,3,Veteran,290,0.471
-Primordial Slime,171,1,Giant Constrictor Snake,118,0.462
-Primordial Slime,171,2,Shield Guardian,253,0.452
-Primordial Slime,171,3,Ice Devil,172,0.4
-"Lesser Elemental, Fire",133,1,Fire Elemental,101,0.8
-"Lesser Elemental, Fire",133,2,Water Elemental,296,0.667
-"Lesser Elemental, Fire",133,3,Air Elemental,13,0.529
-"Lesser Elemental, Air",131,1,Air Elemental,13,0.788
-"Lesser Elemental, Air",131,2,Water Elemental,296,0.686
-"Lesser Elemental, Air",131,3,Earth Elemental,94,0.686
-"Dragon, Swamp",65,1,Swarm of Ravens,276,0.593
-"Dragon, Swamp",65,2,Silver Dragon Wyrmling,255,0.588
-"Dragon, Swamp",65,3,Red Dragon Wyrmling,234,0.581
-The Wandering Merchant,213,1,Water Elemental,296,0.545
-The Wandering Merchant,213,2,Blue Dragon Wyrmling,50,0.526
-The Wandering Merchant,213,3,White Dragon Wyrmling,303,0.513
-Cave Brute,32,1,Raven,233,0.533
-Cave Brute,32,2,Hunter Shark,169,0.455
-Cave Brute,32,3,Sea Horse,250,0.421
-Naga,151,1,Sea Hag,249,0.545
-Naga,151,2,Spirit Naga,260,0.533
-Naga,151,3,Goat,146,0.25
-Grimlow,111,1,Grimlock,155,0.8
-Grimlow,111,2,Giant Owl,129,0.5
-Grimlow,111,3,Merrow,197,0.462
-"Ape, Snow",9,1,Giant Ape,113,0.588
-"Ape, Snow",9,2,Giant Owl,129,0.471
-"Ape, Snow",9,3,Raven,233,0.462
+Rime Walker,183,1,Shrieker,254,0.632
+Rime Walker,183,2,Water Elemental,296,0.538
+Rime Walker,183,3,Grimlock,155,0.526
+Rot Flower,186,1,Iron Golem,176,0.5
+Rot Flower,186,2,Merrow,197,0.25
+Rot Flower,186,3,Brown Bear,55,0.2
+"Scarab, Swarm",190,1,Swarm of Rats,275,0.64
+"Scarab, Swarm",190,2,Swarm of Ravens,276,0.593
+"Scarab, Swarm",190,3,Swarm of Spiders,277,0.571
 Scarecrow,191,1,Merrow,197,0.533
 Scarecrow,191,2,Brown Bear,55,0.526
 Scarecrow,191,3,Specter,258,0.5
-Strangler,210,1,Stirge,264,0.667
-Strangler,210,2,Tiger,281,0.571
-Strangler,210,3,Eagle,93,0.571
-Elf,75,1,Elk,97,0.667
-Elf,75,2,Eagle,93,0.5
-Elf,75,3,Dire Wolf,81,0.5
-Viperian,226,1,Veteran,290,0.667
-Viperian,226,2,Giant Ape,113,0.588
-Viperian,226,3,Fire Giant,102,0.556
-"Snake, Swarm",203,1,Swarm of Poisonous Snakes,273,0.611
-"Snake, Swarm",203,2,Swarm of Spiders,277,0.593
-"Snake, Swarm",203,3,Swarm of Ravens,276,0.538
-Brain Eater,28,1,Shrieker,254,0.526
-Brain Eater,28,2,Giant Weasel,140,0.522
-Brain Eater,28,3,Planetar,221,0.105
-"Snake, Cobra",201,1,Constrictor Snake,69,0.643
-"Snake, Cobra",201,2,Giant Constrictor Snake,118,0.588
-"Snake, Cobra",201,3,Poisonous Snake,223,0.538
+Shark,196,1,Reef Shark,235,0.667
+Shark,196,2,Hawk,161,0.667
+Shark,196,3,Giant Shark,135,0.625
+"Shark, Megalodon",197,1,Giant Shark,135,0.692
+"Shark, Megalodon",197,2,Reef Shark,235,0.56
+"Shark, Megalodon",197,3,Blood Hawk,49,0.56
+Siren,198,1,Stirge,264,0.727
+Siren,198,2,Raven,233,0.6
+Siren,198,3,Sprite,261,0.545
 Smilodon,200,1,Magmin,190,0.429
 Smilodon,200,2,Baboon,34,0.429
 Smilodon,200,3,Cloud Giant,66,0.421
-"Gnome, Deep",94,1,Deep Gnome (Svirfneblin),78,0.625
-"Gnome, Deep",94,2,Flesh Golem,103,0.476
-"Gnome, Deep",94,3,Giant Eagle,121,0.476
-"Dragon, Frost",63,1,Dragon Turtle,85,0.72
-"Dragon, Frost",63,2,Young Red Dragon,319,0.643
-"Dragon, Frost",63,3,Young Green Dragon,318,0.6
-"Demon, Glabrezu",50,1,Glabrezu,143,0.727
-"Demon, Glabrezu",50,2,Young Green Dragon,318,0.5
-"Demon, Glabrezu",50,3,Young Red Dragon,319,0.467
-"Kobold, Sorcerer",127,1,Stone Golem,266,0.462
-"Kobold, Sorcerer",127,2,Noble,207,0.4
-"Kobold, Sorcerer",127,3,Balor,36,0.4
+"Snake, Cobra",201,1,Constrictor Snake,69,0.643
+"Snake, Cobra",201,2,Giant Constrictor Snake,118,0.588
+"Snake, Cobra",201,3,Poisonous Snake,223,0.538
+"Snake, Giant",202,1,Stone Giant,265,0.818
+"Snake, Giant",202,2,Giant Shark,135,0.818
+"Snake, Giant",202,3,Giant Hyena,126,0.727
+"Snake, Swarm",203,1,Swarm of Poisonous Snakes,273,0.611
+"Snake, Swarm",203,2,Swarm of Spiders,277,0.593
+"Snake, Swarm",203,3,Swarm of Ravens,276,0.538
+Soldier,204,1,Solar,257,0.667
+Soldier,204,2,Drider,87,0.615
+Soldier,204,3,Deer,79,0.545
+Sphinx,205,1,Gynosphinx,158,0.75
+Sphinx,205,2,Androsphinx,24,0.706
+Sphinx,205,3,Sprite,261,0.5
+"Spider, Swarm",208,1,Swarm of Spiders,277,0.857
+"Spider, Swarm",208,2,Swarm of Quippers,274,0.621
+"Spider, Swarm",208,3,Swarm of Centipedes,271,0.581
+Stingbat,209,1,Stirge,264,0.571
+Stingbat,209,2,Bat,41,0.545
+Stingbat,209,3,Frost Giant,107,0.526
+Strangler,210,1,Stirge,264,0.667
+Strangler,210,2,Tiger,281,0.571
+Strangler,210,3,Eagle,93,0.571
+The Ten-Eyed Oracle,212,1,Stone Golem,266,0.56
+The Ten-Eyed Oracle,212,2,Nalfeshnee,204,0.5
+The Ten-Eyed Oracle,212,3,Sea Horse,250,0.435
+The Wandering Merchant,213,1,Water Elemental,296,0.545
+The Wandering Merchant,213,2,Blue Dragon Wyrmling,50,0.526
+The Wandering Merchant,213,3,White Dragon Wyrmling,303,0.513
+Thief,214,1,Tiger,281,0.6
+Thief,214,2,Stirge,264,0.545
+Thief,214,3,Shrieker,254,0.462
+"Troll, Frost",219,1,Frost Giant,107,0.636
+"Troll, Frost",219,2,Dragon Turtle,85,0.5
+"Troll, Frost",219,3,Giant Frog,124,0.381
+Tyrannosaurus,220,1,Tyrannosaurus Rex,286,0.867
+Tyrannosaurus,220,2,Tarrasque,279,0.455
+Tyrannosaurus,220,3,Giant Shark,135,0.417
+Velociraptor,224,1,Giant Elk,122,0.476
+Velociraptor,224,2,Storm Giant,267,0.435
+Velociraptor,224,3,Lizard,186,0.333
+Viperian,226,1,Veteran,290,0.667
+Viperian,226,2,Giant Ape,113,0.588
+Viperian,226,3,Fire Giant,102,0.556
+"Viperian, Ophid",227,1,Half-Red Dragon Veteran,159,0.5
+"Viperian, Ophid",227,2,Cloud Giant,66,0.48
+"Viperian, Ophid",227,3,Veteran,290,0.476
 "Viperian, Wizard",228,1,Giant Lizard,127,0.667
 "Viperian, Wizard",228,2,Swarm of Quippers,274,0.5
 "Viperian, Wizard",228,3,Tribal Warrior,283,0.483
 Void Spawn,229,1,Chain Devil,61,0.476
 Void Spawn,229,2,Shield Guardian,253,0.4
 Void Spawn,229,3,Sprite,261,0.375
-Soldier,204,1,Solar,257,0.667
-Soldier,204,2,Drider,87,0.615
-Soldier,204,3,Deer,79,0.545
+Void Spider,230,1,Giant Wolf Spider,141,0.571
+Void Spider,230,2,Phase Spider,219,0.522
+Void Spider,230,3,Giant Spider,136,0.522

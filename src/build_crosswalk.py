@@ -72,15 +72,19 @@ def build_crosswalk(conn: sqlite3.Connection) -> dict:
     sd_by_lower = {name.lower(): (sid, name) for sid, name in sd_monsters}
     fe_by_lower = {name.lower(): (fid, name) for fid, name in fe_monsters}
 
+    # sorted(), not bare set iteration: str hashing is randomized per process
+    # (PYTHONHASHSEED), so iterating a set directly would reshuffle row order
+    # on every run and make the crosswalk / review CSV diff on every rebuild
+    # even though the underlying matches haven't changed.
     exact_keys = set(sd_by_lower) & set(fe_by_lower)
     crosswalk_rows = []
-    for key in exact_keys:
+    for key in sorted(exact_keys):
         sid, _ = sd_by_lower[key]
         fid, _ = fe_by_lower[key]
         crosswalk_rows.append((sid, fid, "exact", 1.0, None))
 
-    unmatched_sd = [sd_by_lower[k] for k in set(sd_by_lower) - exact_keys]
-    unmatched_fe = [fe_by_lower[k] for k in set(fe_by_lower) - exact_keys]
+    unmatched_sd = [sd_by_lower[k] for k in sorted(set(sd_by_lower) - exact_keys)]
+    unmatched_fe = [fe_by_lower[k] for k in sorted(set(fe_by_lower) - exact_keys)]
 
     # Normalized fe names can collide (rare); keep the first fe monster for each.
     fe_norm_to_id_name = {}
