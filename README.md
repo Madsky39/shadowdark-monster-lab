@@ -61,7 +61,7 @@ All output here is for personal use.
       100 lower-confidence candidates in `data/crosswalk_fuzzy_review.csv` for
       manual review)
 - [x] M5 -- EDA (below)
-- [ ] M6 -- LV model
+- [x] M6 -- LV model (below)
 - [ ] M7 -- Cross-system scaling
 - [ ] M8 -- Dashboard
 
@@ -89,3 +89,26 @@ Plots: `python src/analysis.py` writes to `reports/figures/`.
    LV 0-10; a long thin tail runs up to the Tarrasque at LV 30). AC spread
    narrows at higher LV bands, and best-single-attack round damage rises
    with LV band but with wide variance within each band.
+
+## LV model (M6)
+
+Full report (coefficients, R², top-10 residuals both directions):
+`python src/analysis.py` writes it to `reports/lv_model.txt`.
+
+A plain `sklearn.linear_model.LinearRegression` predicting `level` from AC,
+HP, best attack bonus, best avg damage, best num attacks, and best stat mod
+gets **R² = 0.997**. That's almost entirely HP doing the work -- HP alone
+already correlates with LV at r=0.998 (see EDA finding 1), so this model is
+close to learning "HP predictor" and validating that with the other four
+predictors, whose coefficients (all under 0.06 in magnitude, mixed signs)
+should be read cautiously given how collinear they are with HP and LV.
+
+Because the fit is this tight, the residuals are small in absolute terms
+(largest is only ~1.6 levels) -- there are no dramatic outliers, just mild
+ones. The monsters that punch *above* their weight (raw stats justify a
+higher LV than assigned) are mostly high-HP grapplers/ambushers -- Hydra,
+Roper, stone/clay Golems, Bulette. The monsters that punch *below* their
+weight (assigned a higher LV than stats justify) are almost all spellcasters
+or incorporeal/legendary types -- Archmage, Druid, Mage, Wraith, Ghost,
+Phoenix -- consistent with the EDA finding that their danger comes from
+spells/abilities rather than raw AC/HP/attack numbers.

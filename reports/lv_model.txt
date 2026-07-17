@@ -1,0 +1,38 @@
+## LV model (M6)
+
+R-squared: 0.997
+Intercept: -0.028
+
+Coefficients:
+  hp: +0.2161
+  best_num_attacks: +0.0195
+  ac: +0.0088
+  best_avg_damage: -0.0128
+  best_attack_bonus: -0.0146
+  best_stat_mod: -0.0604
+
+Top 10 punch above their weight (stats justify a higher LV than assigned):
+                   name  level  predicted_level  residual
+                  Hydra     10        11.560411 -1.560411
+                  Roper      6         6.526585 -0.526585
+                Duergar      2         2.460841 -0.460841
+           Golem, Stone      8         8.432275 -0.432275
+             Naga, Bone      6         6.419430 -0.419430
+            Golem, Clay      8         8.409863 -0.409863
+                  Camel      2         2.402274 -0.402274
+Lesser Elemental, Earth      6         6.359008 -0.359008
+                Bulette      8         8.358454 -0.358454
+           Giant, Stone      8         8.344644 -0.344644
+
+Top 10 punch below their weight (assigned a higher LV than stats justify):
+         name  level  predicted_level  residual
+     Archmage     10         9.280009  0.719991
+        Druid      7         6.512702  0.487298
+          Roc     15        14.517319  0.482681
+       Wraith      8         7.532756  0.467244
+   Apprentice      1         0.568697  0.431303
+  Brain Eater      8         7.579636  0.420364
+        Ghost      6         5.587057  0.412943
+      Phoenix     13        12.630824  0.369176
+Spider, Giant      3         2.657532  0.342468
+         Mage      6         5.667878  0.332122

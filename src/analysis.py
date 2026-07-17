@@ -1,15 +1,16 @@
-"""M5 (EDA) + shared feature-building for M6/M7.
+"""M5 (EDA) + M6 (LV model) -- and shared feature-building for M7.
 
 load_sd_features() is the one place that turns the raw sd_monsters /
 sd_attacks tables into a per-monster feature table (best attack bonus,
-best single-attack round damage, best stat mod). M6's regression will
-import and reuse it rather than re-deriving the same columns.
+best avg damage, best num attacks, best stat mod). Both the EDA and the
+M6 regression below import and reuse it rather than re-deriving columns.
 
 The eda_* functions each answer one of the README's priority questions
-with a saved plot. They intentionally stop at descriptive/visual
-exploration -- fitted models with reported coefficients belong to M6
-(LV model) and M7 (cross-system scaling), not here. Any trend line drawn
-here is a plain numpy.polyfit for visual reference, not a reported model.
+with a saved plot, intentionally stopping at descriptive/visual
+exploration. Any trend line drawn there is a plain numpy.polyfit for
+visual reference, not a reported model -- the actual fitted models (with
+coefficients and R^2 worth reporting) are fit_lv_model() here for M6, and
+will be M7's cross-system scaling fit.
 
 Run standalone: python src/analysis.py
 """
@@ -25,6 +26,7 @@ import plotly.graph_objects as go
 ROOT = Path(__file__).resolve().parent.parent
 DB_PATH = ROOT / "data" / "monsterlab.db"
 FIGURES_DIR = ROOT / "reports" / "figures"
+REPORT_PATH = ROOT / "reports" / "lv_model.txt"
 
 STAT_MOD_COLS = ["str_mod", "dex_mod", "con_mod", "int_mod", "wis_mod", "cha_mod"]
 
@@ -48,7 +50,7 @@ def load_sd_features(conn: sqlite3.Connection) -> pd.DataFrame:
     ).first()
 
     df = monsters.merge(
-        per_monster_best[["attack_bonus", "round_damage", "num_attacks"]],
+        per_monster_best[["attack_bonus", "round_damage", "num_attacks", "avg_damage"]],
         left_on="id",
         right_index=True,
         how="left",
@@ -57,6 +59,7 @@ def load_sd_features(conn: sqlite3.Connection) -> pd.DataFrame:
             "attack_bonus": "best_attack_bonus",
             "round_damage": "best_round_damage",
             "num_attacks": "best_num_attacks",
+            "avg_damage": "best_avg_damage",
         }
     )
     df["best_stat_mod"] = df[STAT_MOD_COLS].max(axis=1)
@@ -171,6 +174,84 @@ def eda_distributions(df: pd.DataFrame) -> None:
     fig.write_html(FIGURES_DIR / "q5_damage_by_level_band.html", include_plotlyjs="cdn")
 
 
+LV_MODEL_FEATURES = [
+    "ac",
+    "hp",
+    "best_attack_bonus",
+    "best_avg_damage",
+    "best_num_attacks",
+    "best_stat_mod",
+]
+
+
+def fit_lv_model(df: pd.DataFrame) -> dict:
+    """M6: interpretable linear regression of LV on AC/HP/attack bonus/avg damage/num attacks/best stat mod.
+
+    A handful of monsters (e.g. pure spellcasters whose only listed attack
+    is "1 spell +2", with no damage dice) have no avg_damage for their best
+    attack; a missing attack entirely (Dryad's staff attack has no bonus
+    listed at all pre-fix, none remain post-fix) would similarly leave a
+    hole. Both cases are filled with 0 rather than dropped -- "no damage
+    dice" and "no bonus" are real, meaningful zeros for those monsters, not
+    missing data, and dropping them would throw away legitimate rows.
+    """
+    from sklearn.linear_model import LinearRegression
+
+    model_df = df.copy()
+    model_df[LV_MODEL_FEATURES] = model_df[LV_MODEL_FEATURES].fillna(0)
+
+    X = model_df[LV_MODEL_FEATURES]
+    y = model_df["level"]
+
+    model = LinearRegression()
+    model.fit(X, y)
+
+    model_df["predicted_level"] = model.predict(X)
+    model_df["residual"] = model_df["level"] - model_df["predicted_level"]
+
+    coefficients = pd.Series(model.coef_, index=LV_MODEL_FEATURES).sort_values(
+        ascending=False
+    )
+
+    return {
+        "model": model,
+        "coefficients": coefficients,
+        "intercept": model.intercept_,
+        "r_squared": model.score(X, y),
+        "df": model_df,
+    }
+
+
+def report_lv_model(result: dict, n: int = 10) -> str:
+    """Format M6's done-criteria: coefficients, R^2, and the top-n residuals both directions."""
+    lines = ["## LV model (M6)", ""]
+    lines.append(f"R-squared: {result['r_squared']:.3f}")
+    lines.append(f"Intercept: {result['intercept']:.3f}")
+    lines.append("")
+    lines.append("Coefficients:")
+    for name, coef in result["coefficients"].items():
+        lines.append(f"  {name}: {coef:+.4f}")
+
+    df = result["df"]
+    # residual = actual level - predicted level. Negative residual means the
+    # model, looking only at AC/HP/attack/damage, expected a *higher* LV than
+    # the monster was actually given -- i.e. it punches above its weight for
+    # its assigned LV. Positive residual is the reverse: assigned a higher LV
+    # than its raw combat stats alone would justify, i.e. punches below its
+    # weight (its danger, if any, likely comes from riders/abilities instead).
+    punches_above = df.nsmallest(n, "residual")[["name", "level", "predicted_level", "residual"]]
+    punches_below = df.nlargest(n, "residual")[["name", "level", "predicted_level", "residual"]]
+
+    lines.append("")
+    lines.append(f"Top {n} punch above their weight (stats justify a higher LV than assigned):")
+    lines.append(punches_above.to_string(index=False))
+    lines.append("")
+    lines.append(f"Top {n} punch below their weight (assigned a higher LV than stats justify):")
+    lines.append(punches_below.to_string(index=False))
+
+    return "\n".join(lines)
+
+
 def main() -> None:
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
@@ -195,6 +276,14 @@ def main() -> None:
 
         eda_distributions(df)
         print("Q5 distribution plots saved.")
+        print()
+
+        result = fit_lv_model(df)
+        report = report_lv_model(result)
+        print(report)
+        REPORT_PATH.write_text(report + "\n", encoding="utf-8")
+        print()
+        print(f"LV model report saved to {REPORT_PATH}.")
     finally:
         conn.close()
 
