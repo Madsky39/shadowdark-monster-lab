@@ -28,6 +28,8 @@ python src/build_crosswalk.py     # M4: crosswalk
 python src/analysis.py            # M5-M7: EDA + LV model + cross-system scaling reports/plots
 ```
 
+Or run the whole pipeline in order with `python run_all.py`.
+
 Then launch the dashboard:
 
 ```bash
