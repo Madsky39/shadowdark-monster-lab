@@ -145,7 +145,7 @@ turn a 5e monster's CR/HP/AC into suggested Shadowdark LV/HP/AC.
 
 ## Dashboard (M8)
 
-`streamlit run app/dashboard.py` -- three tabs:
+`streamlit run app/dashboard.py` -- four tabs:
 
 1. **Bestiary Explorer**: filter the Shadowdark core bestiary by level range,
    alignment, and name search; see the filtered table and a live LV
@@ -161,11 +161,14 @@ turn a 5e monster's CR/HP/AC into suggested Shadowdark LV/HP/AC.
    bonus" column to translate from); it's `fit_level_to_attack_bonus()`,
    fit on Shadowdark's own LV-to-attack-bonus relationship and applied to
    the predicted LV.
+4. **Combat Simulator**: the Monte Carlo stretch goal (see below), with
+   inputs for the monster, party size/level/class/gear, and trial count,
+   running live in-browser (5000 trials resolves well under a second).
 
-All three tabs share cached data/model loading (`load_data`/`fit_models` in
-`app/dashboard.py`) built on the same `src/analysis.py` functions used by
-the M5-M7 reports, so the dashboard and the written reports can't drift
-apart from each other.
+All four tabs share cached data/model loading (`load_data`/`fit_models` in
+`app/dashboard.py`) built on the same `src/analysis.py` and `src/combat_sim.py`
+functions used by the M5-M7 reports and the standalone simulator CLI, so the
+dashboard and the written reports/CLI can't drift apart from each other.
 
 ## Stretch goal: Monte Carlo combat simulator
 
