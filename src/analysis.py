@@ -1,16 +1,16 @@
-"""M5 (EDA) + M6 (LV model) -- and shared feature-building for M7.
+"""M5 (EDA) + M6 (LV model) + M7 (cross-system scaling).
 
-load_sd_features() is the one place that turns the raw sd_monsters /
-sd_attacks tables into a per-monster feature table (best attack bonus,
-best avg damage, best num attacks, best stat mod). Both the EDA and the
-M6 regression below import and reuse it rather than re-deriving columns.
+load_sd_features() and load_crosswalk_pairs() are the two places that turn
+the raw tables into per-monster/per-pair feature tables; the EDA and both
+regressions import and reuse them rather than re-deriving columns.
 
 The eda_* functions each answer one of the README's priority questions
 with a saved plot, intentionally stopping at descriptive/visual
-exploration. Any trend line drawn there is a plain numpy.polyfit for
-visual reference, not a reported model -- the actual fitted models (with
-coefficients and R^2 worth reporting) are fit_lv_model() here for M6, and
-will be M7's cross-system scaling fit.
+exploration -- any trend line drawn there is a plain numpy.polyfit for
+visual reference, not a reported model. The actual fitted models (with
+coefficients and R^2 worth reporting) are fit_lv_model() for M6 and
+fit_cr_to_lv()/fit_hp_scaling()/fit_ac_scaling() for M7; plot_fitted_model()
+draws their real fitted curve over the scatter, not a disclaimed one.
 
 Run standalone: python src/analysis.py
 """
@@ -27,6 +27,7 @@ ROOT = Path(__file__).resolve().parent.parent
 DB_PATH = ROOT / "data" / "monsterlab.db"
 FIGURES_DIR = ROOT / "reports" / "figures"
 REPORT_PATH = ROOT / "reports" / "lv_model.txt"
+CROSSWALK_REPORT_PATH = ROOT / "reports" / "crosswalk_models.txt"
 
 STAT_MOD_COLS = ["str_mod", "dex_mod", "con_mod", "int_mod", "wis_mod", "cha_mod"]
 
@@ -116,9 +117,9 @@ def eda_outlier_scatters(df: pd.DataFrame) -> None:
     _scatter_with_trend(df, "hp", "level", "LV vs. HP", "q2_hp_vs_level.html")
 
 
-def eda_crosswalk_scatters(conn: sqlite3.Connection) -> pd.DataFrame:
-    """Q3/Q4: on matched monsters, how do CR/LV, HP, and AC line up across systems."""
-    pairs = pd.read_sql(
+def load_crosswalk_pairs(conn: sqlite3.Connection) -> pd.DataFrame:
+    """One row per crosswalk pair with both systems' LV/CR, HP, and AC."""
+    return pd.read_sql(
         """
         SELECT sd.name AS sd_name, sd.level, sd.hp AS sd_hp, sd.ac AS sd_ac,
                fe.name AS fe_name, fe.cr, fe.hp AS fe_hp, fe.ac AS fe_ac
@@ -128,6 +129,11 @@ def eda_crosswalk_scatters(conn: sqlite3.Connection) -> pd.DataFrame:
         """,
         conn,
     )
+
+
+def eda_crosswalk_scatters(conn: sqlite3.Connection) -> pd.DataFrame:
+    """Q3/Q4: on matched monsters, how do CR/LV, HP, and AC line up across systems."""
+    pairs = load_crosswalk_pairs(conn)
 
     _scatter_with_trend(
         pairs.rename(columns={"sd_name": "name"}),
@@ -252,6 +258,93 @@ def report_lv_model(result: dict, n: int = 10) -> str:
     return "\n".join(lines)
 
 
+def fit_cross_system_model(pairs: pd.DataFrame, x_col: str, y_col: str, log_x: bool = False) -> dict:
+    """Simple regression of y_col on x_col (or log1p(x_col)) across crosswalk pairs."""
+    from sklearn.linear_model import LinearRegression
+
+    valid = pairs[[x_col, y_col]].dropna()
+    x_raw = valid[x_col].to_numpy().reshape(-1, 1)
+    x_feature = np.log1p(x_raw) if log_x else x_raw
+    y = valid[y_col].to_numpy()
+
+    model = LinearRegression()
+    model.fit(x_feature, y)
+
+    return {
+        "model": model,
+        "x_col": x_col,
+        "y_col": y_col,
+        "log_x": log_x,
+        "slope": model.coef_[0],
+        "intercept": model.intercept_,
+        "r_squared": model.score(x_feature, y),
+    }
+
+
+def fit_cr_to_lv(pairs: pd.DataFrame) -> dict:
+    """M7 Q3: fit LV ~ CR, trying both linear and log1p(CR) and keeping the better R^2.
+
+    M5's EDA already found log-transforming CR made the correlation worse,
+    not better (r=0.89 linear vs. r=0.83 on log1p(CR)) -- this refits both as
+    actual models rather than just citing that correlation, but expects the
+    same answer.
+    """
+    linear = fit_cross_system_model(pairs, "cr", "level", log_x=False)
+    logged = fit_cross_system_model(pairs, "cr", "level", log_x=True)
+
+    best, other = (linear, logged) if linear["r_squared"] >= logged["r_squared"] else (logged, linear)
+    best["alternative_form"] = "log1p(CR)" if best is linear else "CR (linear)"
+    best["alternative_r_squared"] = other["r_squared"]
+    return best
+
+
+def fit_hp_scaling(pairs: pd.DataFrame) -> dict:
+    """M7 Q4: fit Shadowdark HP ~ 5e HP."""
+    return fit_cross_system_model(pairs, "fe_hp", "sd_hp")
+
+
+def fit_ac_scaling(pairs: pd.DataFrame) -> dict:
+    """M7 Q4: fit Shadowdark AC ~ 5e AC."""
+    return fit_cross_system_model(pairs, "fe_ac", "sd_ac")
+
+
+def plot_fitted_model(pairs: pd.DataFrame, result: dict, title: str, out_name: str) -> None:
+    """Scatter plus the actual fitted curve (unlike EDA's disclaimed polyfit trend lines)."""
+    x_col, y_col = result["x_col"], result["y_col"]
+    valid = pairs[["sd_name", x_col, y_col]].dropna()
+
+    fig = px.scatter(valid, x=x_col, y=y_col, hover_name="sd_name", title=title)
+
+    x_range = np.linspace(valid[x_col].min(), valid[x_col].max(), 100).reshape(-1, 1)
+    x_feature = np.log1p(x_range) if result["log_x"] else x_range
+    y_fit = result["model"].predict(x_feature)
+
+    form = f"log1p({x_col})" if result["log_x"] else x_col
+    label = f"fitted: {y_col} = {result['slope']:.3f}*{form} + {result['intercept']:.3f} (R2={result['r_squared']:.3f})"
+    fig.add_trace(go.Scatter(x=x_range.flatten(), y=y_fit, mode="lines", name=label))
+    fig.write_html(FIGURES_DIR / out_name, include_plotlyjs="cdn")
+
+
+def report_crosswalk_models(cr_result: dict, hp_result: dict, ac_result: dict) -> str:
+    """Format M7's done-criteria: fitted CR-to-LV, HP scaling, AC scaling."""
+    lines = ["## Cross-system scaling (M7)", ""]
+
+    cr_form = "log1p(CR)" if cr_result["log_x"] else "CR"
+    lines.append(f"CR -> LV: best form is {cr_form} (R2={cr_result['r_squared']:.3f}; "
+                 f"{cr_result['alternative_form']} scored R2={cr_result['alternative_r_squared']:.3f})")
+    lines.append(f"  level = {cr_result['slope']:.4f} * {cr_form} + {cr_result['intercept']:.4f}")
+    lines.append("")
+
+    lines.append(f"5e HP -> Shadowdark HP: R2={hp_result['r_squared']:.3f}")
+    lines.append(f"  sd_hp = {hp_result['slope']:.4f} * fe_hp + {hp_result['intercept']:.4f}")
+    lines.append("")
+
+    lines.append(f"5e AC -> Shadowdark AC: R2={ac_result['r_squared']:.3f}")
+    lines.append(f"  sd_ac = {ac_result['slope']:.4f} * fe_ac + {ac_result['intercept']:.4f}")
+
+    return "\n".join(lines)
+
+
 def main() -> None:
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
@@ -284,6 +377,20 @@ def main() -> None:
         REPORT_PATH.write_text(report + "\n", encoding="utf-8")
         print()
         print(f"LV model report saved to {REPORT_PATH}.")
+        print()
+
+        cr_result = fit_cr_to_lv(pairs)
+        hp_result = fit_hp_scaling(pairs)
+        ac_result = fit_ac_scaling(pairs)
+        plot_fitted_model(pairs, cr_result, "5e CR -> Shadowdark LV (fitted)", "m7_cr_to_lv.html")
+        plot_fitted_model(pairs, hp_result, "5e HP -> Shadowdark HP (fitted)", "m7_hp_scaling.html")
+        plot_fitted_model(pairs, ac_result, "5e AC -> Shadowdark AC (fitted)", "m7_ac_scaling.html")
+
+        crosswalk_report = report_crosswalk_models(cr_result, hp_result, ac_result)
+        print(crosswalk_report)
+        CROSSWALK_REPORT_PATH.write_text(crosswalk_report + "\n", encoding="utf-8")
+        print()
+        print(f"Cross-system scaling report saved to {CROSSWALK_REPORT_PATH}.")
     finally:
         conn.close()
 

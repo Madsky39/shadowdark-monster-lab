@@ -1,0 +1,10 @@
+## Cross-system scaling (M7)
+
+CR -> LV: best form is CR (R2=0.792; log1p(CR) scored R2=0.689)
+  level = 0.7188 * CR + 2.3135
+
+5e HP -> Shadowdark HP: R2=0.810
+  sd_hp = 0.1982 * fe_hp + 10.3225
+
+5e AC -> Shadowdark AC: R2=0.630
+  sd_ac = 0.6125 * fe_ac + 5.0116

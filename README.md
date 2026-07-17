@@ -62,7 +62,7 @@ All output here is for personal use.
       manual review)
 - [x] M5 -- EDA (below)
 - [x] M6 -- LV model (below)
-- [ ] M7 -- Cross-system scaling
+- [x] M7 -- Cross-system scaling (below)
 - [ ] M8 -- Dashboard
 
 ## EDA findings (M5)
@@ -112,3 +112,25 @@ weight (assigned a higher LV than stats justify) are almost all spellcasters
 or incorporeal/legendary types -- Archmage, Druid, Mage, Wraith, Ghost,
 Phoenix -- consistent with the EDA finding that their danger comes from
 spells/abilities rather than raw AC/HP/attack numbers.
+
+## Cross-system scaling (M7)
+
+Full report: `python src/analysis.py` writes it to
+`reports/crosswalk_models.txt`; fitted-curve-over-scatter plots go to
+`reports/figures/m7_*.html`.
+
+Three simple `LinearRegression` fits on the 143 crosswalk pairs, each trying
+CR both as-is and log1p-transformed and keeping whichever scored higher
+(matching M5's finding that log made the CR/LV correlation worse, not
+better):
+
+- **CR -> LV**: `level = 0.719 * CR + 2.31` (R² = 0.792, vs. 0.689 for
+  log1p(CR)). Confirms M5's read that the relationship is closer to linear
+  than log across the CR range in this data.
+- **5e HP -> Shadowdark HP**: `sd_hp = 0.198 * fe_hp + 10.32` (R² = 0.810).
+- **5e AC -> Shadowdark AC**: `sd_ac = 0.613 * fe_ac + 5.01` (R² = 0.630) --
+  the weakest of the three fits, consistent with AC being the weakest LV
+  predictor in M6 and the weakest cross-system correlation in M5.
+
+These three formulas are the conversion math M8's dashboard tab will use to
+turn a 5e monster's CR/HP/AC into suggested Shadowdark LV/HP/AC.
