@@ -51,7 +51,7 @@ def load_sd_features(conn: sqlite3.Connection) -> pd.DataFrame:
     ).first()
 
     df = monsters.merge(
-        per_monster_best[["attack_bonus", "round_damage", "num_attacks", "avg_damage"]],
+        per_monster_best[["attack_bonus", "round_damage", "num_attacks", "avg_damage", "damage_dice"]],
         left_on="id",
         right_index=True,
         how="left",
@@ -61,6 +61,7 @@ def load_sd_features(conn: sqlite3.Connection) -> pd.DataFrame:
             "round_damage": "best_round_damage",
             "num_attacks": "best_num_attacks",
             "avg_damage": "best_avg_damage",
+            "damage_dice": "best_damage_dice",
         }
     )
     df["best_stat_mod"] = df[STAT_MOD_COLS].max(axis=1)

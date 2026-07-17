@@ -166,3 +166,29 @@ All three tabs share cached data/model loading (`load_data`/`fit_models` in
 `app/dashboard.py`) built on the same `src/analysis.py` functions used by
 the M5-M7 reports, so the dashboard and the written reports can't drift
 apart from each other.
+
+## Stretch goal: Monte Carlo combat simulator
+
+```bash
+python src/combat_sim.py --monster Owlbear --party-size 4 --party-level 3 --trials 5000
+```
+
+Simulates a party of N level-X PCs vs. a chosen `sd_monsters` entry, round
+by round (party attacks, then the monster attacks back), tracking
+Shadowdark's actual crit rule (natural 20 doubles the damage dice, natural 1
+always misses). Over `--trials` runs it reports party win rate, wipe rate,
+timeout rate, and average rounds to resolve the fight.
+
+This isn't a full rules engine -- no initiative, spells, talents, or
+conditions, one attack per PC per round. PC stats are a deliberately simple
+approximation, not an exact reimplementation of Shadowdark's per-class
+talent tables (which this project never ingested): HP uses the real,
+well-documented hit dice per class (Fighter d8/Priest d6/Thief+Wizard d4)
+and standard armor math (10 + DEX + armor bonus, cross-checked against our
+own `sd_monsters` AC-by-`armor_type` averages); attack bonus reuses
+`fit_level_to_attack_bonus()` from M8, since Shadowdark levels are
+calibrated so a same-level monster is a fair fight -- "what attack bonus
+does a level-X monster have" is a reasonable, data-grounded stand-in for a
+level-X PC's, rather than a guessed talent progression. Every input
+(class, armor, CON/DEX mod, weapon dice) is a CLI flag if your table's
+numbers differ.
