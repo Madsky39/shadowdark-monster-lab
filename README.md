@@ -73,6 +73,12 @@ All output here is for personal use.
 - [x] M7 -- Cross-system scaling (below)
 - [x] M8 -- Dashboard (below)
 
+Stretch goals:
+
+- [x] Monte Carlo combat simulator (below)
+- [ ] Spell data ingest and analysis (tier vs. effect patterns)
+- [ ] PDF stat block intake via shadowdark-parser for owned books
+
 ## EDA findings (M5)
 
 Plots: `python src/analysis.py` writes to `reports/figures/`.
