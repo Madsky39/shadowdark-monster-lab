@@ -76,7 +76,7 @@ All output here is for personal use.
 Stretch goals:
 
 - [x] Monte Carlo combat simulator (below)
-- [ ] Spell data ingest and analysis (tier vs. effect patterns)
+- [x] Spell data ingest and analysis (below)
 - [ ] PDF stat block intake via shadowdark-parser for owned books
 
 ## EDA findings (M5)
@@ -201,3 +201,32 @@ does a level-X monster have" is a reasonable, data-grounded stand-in for a
 level-X PC's, rather than a guessed talent progression. Every input
 (class, armor, CON/DEX mod, weapon dice) is a CLI flag if your table's
 numbers differ.
+
+## Stretch goal: spell data ingest and analysis
+
+```bash
+python src/ingest_spells.py    # sd_spells: 85 core spells
+python src/analyze_spells.py   # tier vs. effect report + heatmap
+```
+
+`sd_spells` loads tier, classes, DC, range, duration, and description for
+all 85 core spells (same source/cache as the bestiary). There's no "effect
+type" field in the source data, so `analyze_spells.py` tags each spell's
+*name + description* against a short, hand-picked keyword list per category
+(damage/healing/control/buff/protection/summon/divination/utility) --
+`EFFECT_KEYWORDS` in that file is the whole classifier, readable top to
+bottom, not a model. A spell can match several tags; one that matches none
+is tagged "other" (9-21% per tier here) -- that's an expected keyword-net
+miss rate, not a bug, and the report/heatmap (`reports/spell_analysis.txt`,
+`reports/figures/spell_tier_vs_effect.html`) should be read as a rough
+pattern-finder, not a rules-accurate taxonomy.
+
+Findings: **summon spells only appear at tier 3+** (0% of tiers 1-2, then
+6/5/13% of tiers 3/4/5) -- Shadowdark reserves conjuring allies for
+higher-tier casters. **Buff spells cluster at the tier extremes** (19%/15%
+of tiers 1/2, dropping to 0% at tier 3, then back up to 13% at tier 5).
+**Damage-spell share is flat across tiers** (12-17%) -- tiers scale damage
+*amount* (bigger dice), not how often a tier's spell list is damage-focused.
+**The wizard:priest split is stable across all five tiers** (roughly 2:1
+wizard-leaning at every tier, no tier where one class dominates more than
+another).
