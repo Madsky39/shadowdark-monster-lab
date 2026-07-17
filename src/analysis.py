@@ -228,6 +228,23 @@ def fit_lv_model(df: pd.DataFrame) -> dict:
     }
 
 
+def lv_model_outliers(result: dict, n: int = 10) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Split fit_lv_model's residuals into the two outlier tables M6/M8 both need.
+
+    residual = actual level - predicted level. Negative residual means the
+    model, looking only at AC/HP/attack/damage, expected a *higher* LV than
+    the monster was actually given -- i.e. it punches above its weight for
+    its assigned LV. Positive residual is the reverse: assigned a higher LV
+    than its raw combat stats alone would justify, i.e. punches below its
+    weight (its danger, if any, likely comes from riders/abilities instead).
+    """
+    df = result["df"]
+    cols = ["name", "level", "predicted_level", "residual"]
+    punches_above = df.nsmallest(n, "residual")[cols]
+    punches_below = df.nlargest(n, "residual")[cols]
+    return punches_above, punches_below
+
+
 def report_lv_model(result: dict, n: int = 10) -> str:
     """Format M6's done-criteria: coefficients, R^2, and the top-n residuals both directions."""
     lines = ["## LV model (M6)", ""]
@@ -238,15 +255,7 @@ def report_lv_model(result: dict, n: int = 10) -> str:
     for name, coef in result["coefficients"].items():
         lines.append(f"  {name}: {coef:+.4f}")
 
-    df = result["df"]
-    # residual = actual level - predicted level. Negative residual means the
-    # model, looking only at AC/HP/attack/damage, expected a *higher* LV than
-    # the monster was actually given -- i.e. it punches above its weight for
-    # its assigned LV. Positive residual is the reverse: assigned a higher LV
-    # than its raw combat stats alone would justify, i.e. punches below its
-    # weight (its danger, if any, likely comes from riders/abilities instead).
-    punches_above = df.nsmallest(n, "residual")[["name", "level", "predicted_level", "residual"]]
-    punches_below = df.nlargest(n, "residual")[["name", "level", "predicted_level", "residual"]]
+    punches_above, punches_below = lv_model_outliers(result, n)
 
     lines.append("")
     lines.append(f"Top {n} punch above their weight (stats justify a higher LV than assigned):")
@@ -306,6 +315,21 @@ def fit_hp_scaling(pairs: pd.DataFrame) -> dict:
 def fit_ac_scaling(pairs: pd.DataFrame) -> dict:
     """M7 Q4: fit Shadowdark AC ~ 5e AC."""
     return fit_cross_system_model(pairs, "fe_ac", "sd_ac")
+
+
+def fit_level_to_attack_bonus(df: pd.DataFrame) -> dict:
+    """M8 converter support: Shadowdark LV -> typical Shadowdark attack bonus.
+
+    M7 only fit CR->LV and HP/AC scaling; it didn't cover attack bonus
+    because there's no clean single "5e attack bonus" column to translate
+    from. But M8's converter still needs to suggest one, and best_attack_bonus
+    already correlates with level at r=0.90 within sd_monsters itself (M5/M6)
+    -- so once M7's CR->LV fit gives a predicted LV, this simple univariate
+    regression (fit on Shadowdark's own LV/attack-bonus relationship) turns
+    that into a suggested attack bonus, without inventing a cross-system
+    comparison the data doesn't support.
+    """
+    return fit_cross_system_model(df, "level", "best_attack_bonus")
 
 
 def plot_fitted_model(pairs: pd.DataFrame, result: dict, title: str, out_name: str) -> None:

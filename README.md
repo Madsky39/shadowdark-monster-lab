@@ -25,7 +25,13 @@ python src/ingest_shadowdark.py   # M1: sd_monsters
 python src/ingest_open5e.py       # M2: fe_monsters (cached to data/raw/open5e/)
 python src/parse_stats.py         # M3: sd_attacks
 python src/build_crosswalk.py     # M4: crosswalk
-python src/analysis.py            # M5: EDA plots -> reports/figures/
+python src/analysis.py            # M5-M7: EDA + LV model + cross-system scaling reports/plots
+```
+
+Then launch the dashboard:
+
+```bash
+streamlit run app/dashboard.py
 ```
 
 `data/monsterlab.db` and `data/raw/` are gitignored and rebuilt locally by these
@@ -63,7 +69,7 @@ All output here is for personal use.
 - [x] M5 -- EDA (below)
 - [x] M6 -- LV model (below)
 - [x] M7 -- Cross-system scaling (below)
-- [ ] M8 -- Dashboard
+- [x] M8 -- Dashboard (below)
 
 ## EDA findings (M5)
 
@@ -134,3 +140,27 @@ better):
 
 These three formulas are the conversion math M8's dashboard tab will use to
 turn a 5e monster's CR/HP/AC into suggested Shadowdark LV/HP/AC.
+
+## Dashboard (M8)
+
+`streamlit run app/dashboard.py` -- three tabs:
+
+1. **Bestiary Explorer**: filter the Shadowdark core bestiary by level range,
+   alignment, and name search; see the filtered table and a live LV
+   histogram.
+2. **LV Model Findings**: M6's R², coefficients chart, predicted-vs-actual
+   scatter, and both outlier tables (punches above/below weight) from
+   `lv_model_outliers()`.
+3. **5e -> Shadowdark Converter**: pick an SRD monster from a dropdown (auto-
+   fills its CR/HP/AC) or enter stats manually, and get a suggested
+   Shadowdark stat block (LV/AC/HP/attack bonus) using the M7 fits, plus an
+   expander showing the exact formulas used. Attack bonus isn't a direct
+   cross-system fit (M7 didn't cover it -- there's no single 5e "attack
+   bonus" column to translate from); it's `fit_level_to_attack_bonus()`,
+   fit on Shadowdark's own LV-to-attack-bonus relationship and applied to
+   the predicted LV.
+
+All three tabs share cached data/model loading (`load_data`/`fit_models` in
+`app/dashboard.py`) built on the same `src/analysis.py` functions used by
+the M5-M7 reports, so the dashboard and the written reports can't drift
+apart from each other.
