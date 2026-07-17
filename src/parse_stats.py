@@ -46,12 +46,15 @@ CREATE TABLE sd_attacks (
 
 SPLIT_CLAUSES_RE = re.compile(r"\s+(?:or|and)\s+")
 
-# <count> <name> [(range)] [+bonus] [(damage)] -- name is non-greedy so the
+# <count> <name> [(range)] [+/-bonus] [(damage)] -- name is non-greedy so the
 # optional groups after it (range/bonus/damage) can claim their own text.
+# Bonus sign and digits are captured separately since some entries space
+# them out ("1 bite + 9"); a few monsters (e.g. Dryad's "1 staff -1") have
+# a negative bonus, so the sign isn't hardcoded to "+".
 CLAUSE_RE = re.compile(
     r"^(?P<num>\d+)\s+(?P<name>.+?)"
     r"(?:\s*\((?P<range>(?:close|near|far|double)[^)]*)\))?"
-    r"(?:\s*\+\s*(?P<bonus>\d+))?"
+    r"(?:\s*(?P<bonus_sign>[+-])\s*(?P<bonus>\d+))?"
     r"(?:\s*\((?P<damage>[^)]*)\))?$"
 )
 
@@ -91,10 +94,16 @@ def parse_clause(clause: str) -> dict | None:
     if m.group("damage"):
         damage_dice, avg_damage, rider_text = parse_damage(m.group("damage"))
 
+    attack_bonus = None
+    if m.group("bonus"):
+        attack_bonus = int(m.group("bonus"))
+        if m.group("bonus_sign") == "-":
+            attack_bonus = -attack_bonus
+
     return {
         "num_attacks": int(m.group("num")),
         "attack_name": m.group("name").strip(),
-        "attack_bonus": int(m.group("bonus")) if m.group("bonus") else None,
+        "attack_bonus": attack_bonus,
         "damage_dice": damage_dice,
         "avg_damage": avg_damage,
         "rider_text": rider_text,
