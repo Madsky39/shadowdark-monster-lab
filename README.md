@@ -288,11 +288,3 @@ missing, using the small cached JSON already committed at
 data, unlike the PDF-intake stretch goal's tables). That first load takes
 a few seconds longer; every load after is instant, same as running
 `run_all.py` locally then launching normally.
-
-To redeploy elsewhere, or if you fork this: push to GitHub, go to
-[share.streamlit.io](https://share.streamlit.io), sign in with GitHub,
-click "New app," pick the repo/branch, set the main file path to
-`app/dashboard.py`, and deploy -- Streamlit Cloud installs
-`requirements.txt` automatically, no other config needed. That's a manual
-step tied to your own GitHub/Streamlit account, not something scriptable
-from here.
