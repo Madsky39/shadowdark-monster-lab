@@ -272,3 +272,28 @@ documented output schema (from reading its `entity.ts`/`statblock.ts`/
 field mapping should be exact, but if a future shadowdark-parser release
 changes its schema, re-verify against real output before trusting it on a
 real book.
+
+## Deploying the dashboard to Streamlit Community Cloud
+
+`data/monsterlab.db` is gitignored (it's a build artifact, not source), so
+a fresh clone -- including a fresh Streamlit Cloud container -- doesn't
+have it. `app/dashboard.py` handles that itself: `ensure_database()` runs
+the ingest/parse/crosswalk pipeline once on first load if the DB is
+missing, using the small cached JSON already committed at
+`data/raw/shadowdark/` and `data/raw/open5e/` (both freely-licensed source
+data, unlike the PDF-intake stretch goal's tables). That first load takes
+a few seconds longer; every load after is instant, same as running
+`run_all.py` locally then launching normally.
+
+To deploy:
+
+1. Push this repo to GitHub (already done if you're reading this there).
+2. Go to [share.streamlit.io](https://share.streamlit.io), sign in with
+   GitHub, and click "New app."
+3. Pick this repo, the `main` branch, and set the main file path to
+   `app/dashboard.py`.
+4. Deploy. Streamlit Cloud installs everything in `requirements.txt`
+   automatically -- no other config needed.
+
+This is a manual step you do yourself in Streamlit's UI (it's tied to your
+GitHub/Streamlit account), not something that can be scripted from here.

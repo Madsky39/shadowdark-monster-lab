@@ -3,7 +3,11 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 
-data/raw/
+data/raw/*
+!data/raw/shadowdark/
+!data/raw/shadowdark/*.json
+!data/raw/open5e/
+!data/raw/open5e/*.json
 data/monsterlab.db
 
 reports/figures/

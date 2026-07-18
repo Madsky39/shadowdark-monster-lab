@@ -34,10 +34,39 @@ from combat_sim import (  # noqa: E402
     make_party,
     run_monte_carlo,
 )
+import build_crosswalk  # noqa: E402
+import ingest_open5e  # noqa: E402
+import ingest_shadowdark  # noqa: E402
+import parse_stats  # noqa: E402
 
 DB_PATH = ROOT / "data" / "monsterlab.db"
 
 st.set_page_config(page_title="Shadowdark Monster Lab", layout="wide")
+
+
+def ensure_database() -> None:
+    """Cloud deploys start from a fresh checkout with no monsterlab.db (it's gitignored,
+    a build artifact -- see README). Build it once from the committed raw JSON caches
+    (data/raw/shadowdark/, data/raw/open5e/) the same way run_all.py does locally, so a
+    fresh Streamlit Cloud container bootstraps itself on first load instead of crashing.
+    Only sd_monsters/fe_monsters/sd_attacks/crosswalk are built -- the tables this
+    dashboard actually reads; spells and the PDF-intake stretch goal aren't needed here.
+    """
+    if DB_PATH.exists():
+        return
+    with st.spinner("First run: building the database from cached data..."):
+        ingest_shadowdark.main()
+        conn = sqlite3.connect(DB_PATH)
+        try:
+            pages = ingest_open5e.fetch_pages(refresh=False)
+            ingest_open5e.build_fe_monsters(conn, pages)
+        finally:
+            conn.close()
+        parse_stats.main()
+        build_crosswalk.main()
+
+
+ensure_database()
 
 
 @st.cache_resource
@@ -118,10 +147,10 @@ with tab_explorer:
         "best_attack_bonus",
         "best_stat_mod",
     ]
-    st.dataframe(filtered[display_cols], use_container_width=True, hide_index=True)
+    st.dataframe(filtered[display_cols], width="stretch", hide_index=True)
 
     fig = px.histogram(filtered, x="level", nbins=31, title="LV distribution (filtered)")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 # ---------------------------------------------------------------------------
 # Tab 2: LV model findings
@@ -143,7 +172,7 @@ with tab_model:
         labels={"x": "feature", "y": "coefficient"},
         title="LV model coefficients",
     )
-    st.plotly_chart(coef_fig, use_container_width=True)
+    st.plotly_chart(coef_fig, width="stretch")
 
     pred_fig = px.scatter(
         lv_result["df"],
@@ -156,17 +185,17 @@ with tab_model:
     pred_fig.add_trace(
         go.Scatter(x=[lo, hi], y=[lo, hi], mode="lines", name="perfect prediction")
     )
-    st.plotly_chart(pred_fig, use_container_width=True)
+    st.plotly_chart(pred_fig, width="stretch")
 
     st.subheader("Outliers: which monsters punch above/below their weight")
     punches_above, punches_below = lv_model_outliers(lv_result, n=10)
     col_above, col_below = st.columns(2)
     with col_above:
         st.markdown("**Punch above their weight** (stats justify a higher LV)")
-        st.dataframe(punches_above, use_container_width=True, hide_index=True)
+        st.dataframe(punches_above, width="stretch", hide_index=True)
     with col_below:
         st.markdown("**Punch below their weight** (assigned a higher LV than stats justify)")
-        st.dataframe(punches_below, use_container_width=True, hide_index=True)
+        st.dataframe(punches_below, width="stretch", hide_index=True)
 
 # ---------------------------------------------------------------------------
 # Tab 3: Converter
@@ -290,4 +319,4 @@ with tab_combat:
             labels={"x": "outcome", "y": "rate"},
             title=f"Outcome distribution over {int(trials)} trials",
         )
-        st.plotly_chart(outcome_fig, use_container_width=True)
+        st.plotly_chart(outcome_fig, width="stretch")
