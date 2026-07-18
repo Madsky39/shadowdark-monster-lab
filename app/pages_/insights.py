@@ -1,13 +1,14 @@
-"""M11: Insights landing page -- LV model v2.
+"""M11 + M15: Insights landing page.
 
-Renders Model A (the no-HP model, the one with interpretable coefficients)
-and Model B (LV from threat_score alone), with the v1 full model demoted to
-the validation footnote it turned out to be. All numbers come from the same
-shared fit functions the written report uses (analysis.fit_lv_model_a /
-fit_lv_threat_model via common.fit_models), so the page and
-reports/lv_model.txt cannot drift.
-
-M15 adds the archetype scatter and the empirical difficulty validation here.
+The archetype scatter and empirical difficulty validation (M15) lead the
+page, followed by Model A (the no-HP model, the one with interpretable
+coefficients) and Model B (LV from threat_score alone), with the v1 full
+model demoted to the validation footnote it turned out to be. All numbers
+come from the same shared functions the written reports use
+(analysis.difficulty_validation / fit_lv_model_a / fit_lv_threat_model), so
+the page and reports/ cannot drift. Win rates come from the committed
+reports/sim_results.csv; if it is missing locally the page hints at
+python src/batch_sim.py instead of crashing.
 """
 
 import sys
@@ -23,7 +24,7 @@ sys.path.insert(0, str(ROOT / "app"))
 sys.path.insert(0, str(ROOT / "src"))
 
 from common import fit_models, get_connection, load_data  # noqa: E402
-from analysis import lv_model_outliers  # noqa: E402
+from analysis import difficulty_validation, load_sim_results, lv_model_outliers  # noqa: E402
 
 sd_df, fe_df, pairs = load_data(get_connection())
 models = fit_models(sd_df, pairs)
@@ -55,6 +56,91 @@ def outlier_columns(result: dict, n: int = 10) -> None:
         st.dataframe(punches_below, width="stretch", hide_index=True)
 
 
+# ---------------------------------------------------------------------------
+# M15: archetype scatter (the landing-page centerpiece) + validation
+# ---------------------------------------------------------------------------
+st.subheader("The bestiary at a glance")
+
+sim_df = load_sim_results()
+
+scatter_df = sd_df[sd_df["effective_dpr"] > 0].copy()
+n_dropped = len(sd_df) - len(scatter_df)
+hover_data = {"level": True}
+if sim_df is not None:
+    scatter_df = scatter_df.merge(sim_df[["name", "win_rate"]], on="name", how="left")
+    hover_data["win_rate"] = ":.1%"
+
+scatter = px.scatter(
+    scatter_df,
+    x="effective_hp",
+    y="effective_dpr",
+    color="level",
+    hover_name="name",
+    hover_data=hover_data,
+    log_x=True,
+    log_y=True,
+    labels={"effective_hp": "effective HP (damage to drop it)",
+            "effective_dpr": "effective DPR (expected damage per round)"},
+    title="Every core monster: offense vs. defense (log-log), colored by LV",
+)
+scatter.add_annotation(
+    xref="paper", yref="paper", x=0.02, y=0.98, showarrow=False,
+    text="<b>glass cannons</b><br>hit hard, drop fast",
+)
+scatter.add_annotation(
+    xref="paper", yref="paper", x=0.98, y=0.02, showarrow=False,
+    text="<b>sponges</b><br>soak damage, hit soft",
+)
+st.plotly_chart(scatter, width="stretch")
+caption = (
+    "effective_dpr and effective_hp from src/metrics.py (M10): expected damage "
+    "output and required damage input against a reference party. "
+    f"{n_dropped} monsters with no parsed damaging attack are omitted (log axes)."
+)
+if sim_df is not None:
+    caption += " Hover shows the reference party's simulated win rate."
+st.caption(caption)
+
+if sim_df is None:
+    st.info("No reports/sim_results.csv -- run python src/batch_sim.py to add "
+            "simulated win rates and the difficulty validation below.")
+else:
+    st.subheader("Does the metric survive contact with the simulator?")
+    validation = difficulty_validation(sim_df, models["lv_a"], models["lv_b"])
+    c = validation["correlations"]
+
+    st.markdown(
+        f"Reference-party win rates for all {c['n_all']} core monsters "
+        f"({int(sim_df['trials'].iloc[0])} trials each, seed "
+        f"{int(sim_df['seed'].iloc[0])}; party definition in src/batch_sim.py). "
+        "Spearman rank correlation with win rate, matched set first "
+        "(LV 10 and under, where party level equals monster LV; above that "
+        "the party is clamped at level 10 by design):"
+    )
+    corr_cols = st.columns(4)
+    corr_cols[0].metric("printed LV (matched)", f"{c['matched_lv_vs_win']:+.3f}")
+    corr_cols[1].metric("threat_score (matched)", f"{c['matched_threat_vs_win']:+.3f}")
+    corr_cols[2].metric("printed LV (all)", f"{c['all_lv_vs_win']:+.3f}")
+    corr_cols[3].metric("threat_score (all)", f"{c['all_threat_vs_win']:+.3f}")
+    st.markdown(
+        "**threat_score predicts simulated outcomes better than printed LV on "
+        "both sets.** The gap is the rider effects: printed LV prices in "
+        "abilities the sim and the metric both cannot see."
+    )
+
+    st.markdown(
+        "**Disagreement table.** Monsters whose printed LV sits far above what "
+        "threat_score predicts (Model B residual) while the sim also finds them "
+        "easier than their LV median (win_excess at or above 0). Two independent "
+        "measurements agreeing against printed LV is the signature of "
+        "rider-dependent danger: petrify, curses, level drain, spellcasting. "
+        "a_residual cross-references the M11 Model A outliers."
+    )
+    st.dataframe(validation["disagreement"], width="stretch", hide_index=True)
+
+# ---------------------------------------------------------------------------
+# M11: LV models
+# ---------------------------------------------------------------------------
 st.subheader("What predicts Shadowdark LV")
 st.markdown(
     "HP tracks LV at r = 0.998 because Shadowdark gives monsters one hit die "

@@ -1,0 +1,24 @@
+## Empirical difficulty validation (M15)
+
+Reference-party win rates for 243 core monsters (2000 trials each, seed 42; party definition in src/batch_sim.py).
+
+Spearman rank correlation of win_rate with:
+  printed LV:    -0.408 (matched set, LV <= 10, n=220)   -0.554 (all monsters)
+  threat_score:  -0.586 (matched set)   -0.690 (all monsters)
+Above LV 10 the reference party is clamped at level 10, so the all-monsters numbers include fights that are outmatched by design; the matched set is the apples-to-apples comparison.
+
+Disagreement table: printed LV far above what threat_score predicts (Model B residual) while the sim also finds the monster easier than its LV median (win_excess >= 0). Both measurements agreeing against printed LV marks rider-dependent danger the attack parser cannot see. a_residual is the M11 Model A residual for cross-reference.
+
+                  name  level  b_predicted_lv  win_rate  win_excess  b_residual  a_residual
+Mordanticus The Flayed     19           7.056     1.000       0.395      11.944       9.169
+              Archmage     10           2.709     1.000       0.003       7.291       2.435
+                 Hydra     10           5.229     1.000       0.003       4.771       2.529
+The Wandering Merchant     15          10.322     0.598       0.290       4.678       2.874
+                  Lich     13           8.353     0.975       0.796       4.647       4.582
+      Viperian, Wizard      8           3.797     1.000       0.000       4.203       5.490
+               Vampire     11           7.160     1.000       0.007       3.840       1.860
+                 Druid      7           3.462     1.000       0.000       3.538       6.434
+                Medusa      8           4.469     1.000       0.000       3.531       1.113
+                  Mage      6           2.709     1.000       0.000       3.291       1.297
+                 Mummy     10           7.165     1.000       0.003       2.835       0.416
+         Brachiosaurus     12           9.353     0.728       0.314       2.647       1.806

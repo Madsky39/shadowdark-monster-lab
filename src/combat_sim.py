@@ -216,18 +216,13 @@ def build_pc_random(
     return build_pc_quick(cls, level, attack_bonus_result, rng, name)
 
 
-def load_monster(conn: sqlite3.Connection, name: str) -> Combatant:
-    """Pull a monster's own stats out of sd_monsters/sd_attacks (same features M6 uses).
+def monster_from_row(row) -> Combatant:
+    """Build a Combatant from one load_sd_features() row.
 
     A few monsters' best (highest expected-damage) attack has no damage dice
     at all -- e.g. a shaman whose best option is "1 spell +2" -- so this
     falls back to 1d4 for those rather than crashing.
     """
-    df = load_sd_features(conn)
-    row = df.loc[df["name"].str.lower() == name.lower()]
-    if row.empty:
-        raise SystemExit(f"No Shadowdark monster named {name!r} in sd_monsters.")
-    row = row.iloc[0]
     return Combatant(
         name=row["name"],
         hp=int(row["hp"]),
@@ -237,6 +232,15 @@ def load_monster(conn: sqlite3.Connection, name: str) -> Combatant:
         damage_dice=row["best_damage_dice"] if pd_notna(row["best_damage_dice"]) else "1d4",
         num_attacks=int(row["best_num_attacks"]) if pd_notna(row["best_num_attacks"]) else 1,
     )
+
+
+def load_monster(conn: sqlite3.Connection, name: str) -> Combatant:
+    """Pull a monster's own stats out of sd_monsters/sd_attacks (same features M6 uses)."""
+    df = load_sd_features(conn)
+    row = df.loc[df["name"].str.lower() == name.lower()]
+    if row.empty:
+        raise SystemExit(f"No Shadowdark monster named {name!r} in sd_monsters.")
+    return monster_from_row(row.iloc[0])
 
 
 def pd_notna(value) -> bool:

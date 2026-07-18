@@ -28,6 +28,8 @@ DB_PATH = ROOT / "data" / "monsterlab.db"
 FIGURES_DIR = ROOT / "reports" / "figures"
 REPORT_PATH = ROOT / "reports" / "lv_model.txt"
 CROSSWALK_REPORT_PATH = ROOT / "reports" / "crosswalk_models.txt"
+SIM_RESULTS_PATH = ROOT / "reports" / "sim_results.csv"
+DIFFICULTY_REPORT_PATH = ROOT / "reports" / "difficulty_validation.txt"
 
 STAT_MOD_COLS = ["str_mod", "dex_mod", "con_mod", "int_mod", "wis_mod", "cha_mod"]
 
@@ -384,6 +386,111 @@ def report_lv_models_v2(v1_result: dict, a_result: dict, b_result: dict, n: int 
     return "\n".join(lines)
 
 
+def load_sim_results() -> pd.DataFrame | None:
+    """The committed M15 batch-sim CSV, or None if it has not been generated.
+
+    The batch sim is a separate explicit step (python src/batch_sim.py),
+    never run by ensure_database() or run_all.py -- callers show a hint
+    instead of crashing when it is missing.
+    """
+    if not SIM_RESULTS_PATH.exists():
+        return None
+    return pd.read_csv(SIM_RESULTS_PATH)
+
+
+def difficulty_validation(sim_df: pd.DataFrame, a_result: dict, b_result: dict, n: int = 12) -> dict:
+    """M15: does threat_score predict simulated outcomes better than printed LV?
+
+    Correlations are Spearman rank correlations of win_rate against printed
+    LV and against threat_score, computed two ways: on the matched set
+    (LV <= 10, where the reference party is the same level as the monster)
+    and on all monsters. Above LV 10 the party level is clamped at 10 by
+    design, so the tail measures "how badly does an outmatched level-10
+    party lose", which still ranks difficulty but no longer holds party
+    level matched; both numbers are reported rather than quietly picking
+    one.
+
+    The disagreement table: monsters where the metric and the sim agree
+    with each other but disagree with printed LV. Operationally, monsters
+    whose printed LV sits well above what threat_score predicts (Model B
+    residual, level minus predicted) AND whose simulated win_rate is above
+    the median for their printed LV (the party does better than the LV
+    says it should). Both independent measurements calling the monster
+    weaker than its LV is the signature of rider-dependent danger --
+    petrify, curses, regeneration, spellcasting -- that the attack parser
+    cannot see. Model A residuals are carried alongside as the M11
+    cross-reference.
+    """
+    from scipy.stats import spearmanr
+
+    merged = sim_df.merge(
+        b_result["df"][["name", "predicted_level", "residual"]].rename(
+            columns={"predicted_level": "b_predicted_lv", "residual": "b_residual"}
+        ),
+        on="name",
+    ).merge(
+        a_result["df"][["name", "residual"]].rename(columns={"residual": "a_residual"}),
+        on="name",
+    )
+
+    matched = merged[merged["level"] <= 10]
+
+    correlations = {
+        "matched_lv_vs_win": spearmanr(matched["level"], matched["win_rate"]).statistic,
+        "matched_threat_vs_win": spearmanr(matched["threat_score"], matched["win_rate"]).statistic,
+        "all_lv_vs_win": spearmanr(merged["level"], merged["win_rate"]).statistic,
+        "all_threat_vs_win": spearmanr(merged["threat_score"], merged["win_rate"]).statistic,
+        "n_matched": len(matched),
+        "n_all": len(merged),
+    }
+
+    median_win_by_lv = merged.groupby("level")["win_rate"].median()
+    merged["win_excess"] = merged["win_rate"] - merged["level"].map(median_win_by_lv)
+
+    overrated = merged[merged["win_excess"] >= 0].nlargest(n, "b_residual")
+    disagreement = overrated[
+        ["name", "level", "b_predicted_lv", "win_rate", "win_excess", "b_residual", "a_residual"]
+    ].round(3)
+
+    return {"correlations": correlations, "disagreement": disagreement, "merged": merged}
+
+
+def report_difficulty_validation(validation: dict, sim_df: pd.DataFrame) -> str:
+    c = validation["correlations"]
+    lines = ["## Empirical difficulty validation (M15)", ""]
+    lines.append(
+        f"Reference-party win rates for {c['n_all']} core monsters "
+        f"({int(sim_df['trials'].iloc[0])} trials each, seed {int(sim_df['seed'].iloc[0])}; "
+        "party definition in src/batch_sim.py)."
+    )
+    lines.append("")
+    lines.append("Spearman rank correlation of win_rate with:")
+    lines.append(
+        f"  printed LV:    {c['matched_lv_vs_win']:+.3f} (matched set, LV <= 10, n={c['n_matched']})"
+        f"   {c['all_lv_vs_win']:+.3f} (all monsters)"
+    )
+    lines.append(
+        f"  threat_score:  {c['matched_threat_vs_win']:+.3f} (matched set)"
+        f"   {c['all_threat_vs_win']:+.3f} (all monsters)"
+    )
+    lines.append(
+        "Above LV 10 the reference party is clamped at level 10, so the all-monsters "
+        "numbers include fights that are outmatched by design; the matched set is the "
+        "apples-to-apples comparison."
+    )
+    lines.append("")
+    lines.append(
+        "Disagreement table: printed LV far above what threat_score predicts (Model B "
+        "residual) while the sim also finds the monster easier than its LV median "
+        "(win_excess >= 0). Both measurements agreeing against printed LV marks "
+        "rider-dependent danger the attack parser cannot see. a_residual is the M11 "
+        "Model A residual for cross-reference."
+    )
+    lines.append("")
+    lines.append(validation["disagreement"].to_string(index=False))
+    return "\n".join(lines)
+
+
 def fit_cross_system_model(pairs: pd.DataFrame, x_col: str, y_col: str, log_x: bool = False) -> dict:
     """Simple regression of y_col on x_col (or log1p(x_col)) across crosswalk pairs."""
     from sklearn.linear_model import LinearRegression
@@ -534,6 +641,20 @@ def main() -> None:
         CROSSWALK_REPORT_PATH.write_text(crosswalk_report + "\n", encoding="utf-8")
         print()
         print(f"Cross-system scaling report saved to {CROSSWALK_REPORT_PATH}.")
+
+        sim_df = load_sim_results()
+        if sim_df is None:
+            print()
+            print(f"No {SIM_RESULTS_PATH.name} yet -- run python src/batch_sim.py "
+                  "to generate it, then rerun this script for the M15 validation report.")
+        else:
+            validation = difficulty_validation(sim_df, a_result, b_result)
+            difficulty_report = report_difficulty_validation(validation, sim_df)
+            print()
+            print(difficulty_report)
+            DIFFICULTY_REPORT_PATH.write_text(difficulty_report + "\n", encoding="utf-8")
+            print()
+            print(f"Difficulty validation report saved to {DIFFICULTY_REPORT_PATH}.")
     finally:
         conn.close()
 
