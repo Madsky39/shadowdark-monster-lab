@@ -93,7 +93,8 @@ v2 status (see [shadowdark-monster-lab-spec-v2.md](shadowdark-monster-lab-spec-v
 - [x] M12 -- 5e Bestiary page (see dashboard section)
 - [x] M13 -- Spells page (see dashboard section; built before M12 per the
       spec's suggested order)
-- [ ] M14-M16 -- not started
+- [x] M14 -- Combat simulator v2 (below)
+- [ ] M15-M16 -- not started
 
 ## EDA findings (M5)
 
@@ -223,11 +224,12 @@ CLI, not several. Pages:
    `analyze_spells.py` functions that write the saved report figure
    (`EFFECT_KEYWORDS` lives in exactly one place). The keyword-net caveat
    stays visible on the page.
-6. **Combat Simulator**: the Monte Carlo stretch goal (see below), with
-   inputs for the monster, party size/level/class/gear, and trial count,
-   running live in-browser (5000 trials resolves well under a second).
-   Still the v1 uniform party_size x party_level version; rebuilt with real
-   per-PC composition in M14.
+6. **Combat Simulator**: the M14 rebuild -- party built per PC in an
+   editable grid (manual mode) or rolled from class-legal tables (quick
+   and random modes), an explicit fixed/reroll variance toggle with the
+   two questions each answers, a seed input for reproducibility, and
+   per-PC death rates charted in fixed mode. Same `build_pc_*` and
+   `run_monte_carlo` functions as the CLI.
 
 `ensure_database()` (in `app/common.py`) also runs the spells ingest on a
 cold start now, since `sd_spells` comes from the same freely licensed
@@ -271,31 +273,57 @@ values for real monsters, clamp edge cases, and constants-consistency
 checks that fail if the committed data drifts from the documented
 derivations.
 
-## Stretch goal: Monte Carlo combat simulator
+## Monte Carlo combat simulator (v1 stretch goal, rebuilt in M14)
 
 ```bash
 python src/combat_sim.py --monster Owlbear --party-size 4 --party-level 3 --trials 5000
+python src/combat_sim.py --monster Owlbear --build-mode random --party-level 3 --variance-mode reroll
+python src/combat_sim.py --monster Owlbear --party-spec party.example.json --seed 42
 ```
 
-Simulates a party of N level-X PCs vs. a chosen `sd_monsters` entry, round
-by round (party attacks, then the monster attacks back), tracking
-Shadowdark's actual crit rule (natural 20 doubles the damage dice, natural 1
-always misses). Over `--trials` runs it reports party win rate, wipe rate,
-timeout rate, and average rounds to resolve the fight.
+Simulates a party of individually built PCs vs. a chosen `sd_monsters`
+entry, round by round (party attacks, then the monster attacks back),
+tracking Shadowdark's actual crit rule (natural 20 doubles the damage dice,
+natural 1 always misses). Each PC attacks with their own bonus and weapon
+die; the monster targets one living PC chosen uniformly at random per
+attack (simple and documented, no focus fire). Over `--trials` runs it
+reports win/wipe/timeout rates, average rounds, and per-PC death rates in
+fixed variance mode.
 
-This isn't a full rules engine -- no initiative, spells, talents, or
-conditions, one attack per PC per round. PC stats are a deliberately simple
-approximation, not an exact reimplementation of Shadowdark's per-class
-talent tables (which this project never ingested): HP uses the real,
-well-documented hit dice per class (Fighter d8/Priest d6/Thief+Wizard d4)
-and standard armor math (10 + DEX + armor bonus, cross-checked against our
-own `sd_monsters` AC-by-`armor_type` averages); attack bonus reuses
-`fit_level_to_attack_bonus()` from M8, since Shadowdark levels are
-calibrated so a same-level monster is a fair fight -- "what attack bonus
-does a level-X monster have" is a reasonable, data-grounded stand-in for a
-level-X PC's, rather than a guessed talent progression. Every input
-(class, armor, CON/DEX mod, weapon dice) is a CLI flag if your table's
-numbers differ.
+Party construction has three modes, shared by the CLI and the dashboard:
+manual (everything specified, per PC), quick (class and level given, the
+rest rolled), and random (class rolled too). Randomization follows the
+actual rules: stats are 3d6 straight down with mods derived from scores,
+HP is rolled per level on the class hit die (Fighter d8, Priest d6, Thief
+and Wizard d4) plus CON mod with a minimum of 1 per level, and gear is
+rolled from class-legal tables only (a wizard can never roll plate) --
+`CLASS_ARMOR`/`CLASS_WEAPONS` in `src/combat_sim.py` mirror the class
+descriptions' Weapons/Armor lines with damage dice from the core weapon
+table, melee-only and ignoring two-handed restrictions (both stated in the
+module).
+
+Variance mode is always an explicit choice because it changes the question:
+`fixed` builds the party once and runs every trial against it ("how does
+this party fare?"), `reroll` rebuilds the party every trial ("how dangerous
+is this monster for a random party of this shape?"). The same Owlbear that
+a fixed level-3 party of fighters beats 99.9% of the time wipes 29% of
+randomly rolled level-3 parties.
+
+Attack bonus is the one deliberate approximation kept from v1: it reuses
+`fit_level_to_attack_bonus()`, since Shadowdark levels are calibrated so a
+same-level monster is a fair fight -- "what attack bonus does a level-X
+monster have" is a reasonable, data-grounded stand-in for a level-X PC's,
+rather than a guessed talent progression.
+
+`--party-spec party.json` takes a JSON list of PC dicts (see
+`party.example.json` in the repo). The v1 flags (`--party-size`,
+`--party-level`, `--class-name`, `--armor`, `--con-mod`, `--dex-mod`,
+`--weapon-dice`) still work and build a uniform party in manual mode; the
+v1 mod flags map onto scores as 10 + 2*mod. Sim invariants are covered in
+`tests/test_combat_sim.py` (a level-5 party beats a LV 1 monster nearly
+always, a lone level-1 PC vs. The Tarrasque nearly never, per-level HP
+minimums hold, rolled gear is always class-legal, same seed gives the same
+result).
 
 ## Stretch goal: spell data ingest and analysis
 
