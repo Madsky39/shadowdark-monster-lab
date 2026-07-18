@@ -36,3 +36,86 @@ Top 10 punch below their weight (assigned a higher LV than stats justify):
       Phoenix     13        12.630824  0.369176
 Spider, Giant      3         2.657532  0.342468
          Mage      6         5.667878  0.332122
+
+## LV model v2 (M11)
+
+HP tracks LV at r = 0.998 because Shadowdark gives monsters one hit die per level: HP is derived from LV by construction, not discovered. The v1 model above is therefore a data-quality validation (the data matches the rules as written), not an insight about what makes monsters dangerous. The two models below are the ones built to say something.
+
+### Model A: no-HP model
+
+Features: ac, best_attack_bonus, best_avg_damage, best_num_attacks, best_stat_mod
+R-squared: 0.817
+Intercept: -3.276
+Coefficients:
+  best_attack_bonus: +0.9480
+  best_num_attacks: +0.5055
+  best_stat_mod: +0.2904
+  ac: +0.1693
+  best_avg_damage: +0.1249
+
+Top 10 punch above their weight (stats justify a higher LV than assigned):
+                   name  level  predicted_level  residual
+Lesser Elemental, Earth      6        10.330968 -4.330968
+  Lesser Elemental, Air      6         9.911932 -3.911932
+            Giant, Fire      9        12.678167 -3.678167
+ Lesser Elemental, Fire      6         9.003629 -3.003629
+                Gorilla      4         6.542723 -2.542723
+Lesser Elemental, Water      6         8.504201 -2.504201
+             Darkmantle      1         3.458264 -2.458264
+          Devil, Horned      7         9.406423 -2.406423
+        Demon, Marilith      9        11.285640 -2.285640
+                   Lion      3         5.282577 -2.282577
+
+Top 10 punch below their weight (assigned a higher LV than stats justify):
+                  name  level  predicted_level  residual
+         The Tarrasque     30        18.888348 11.111652
+Mordanticus The Flayed     19         9.830953  9.169047
+            Rathgamnon     19        12.261586  6.738414
+                 Druid      7         0.566017  6.433983
+      Viperian, Wizard      8         2.510260  5.489740
+            Rat, Swarm      6         0.854719  5.145281
+                  Lich     13         8.417726  4.582274
+                 Dryad      4        -0.043344  4.043344
+        Goblin, Shaman      4         0.154525  3.845475
+                Kraken     17        13.691641  3.308359
+
+### Model B: threat model
+
+level = 0.1592 * threat_score + 2.7093
+R-squared: 0.789
+threat_score = sqrt(effective_dpr * effective_hp), from src/metrics.py. Crit bonus damage is ignored in effective_dpr for simplicity.
+
+Top 10 punch above their weight:
+         name  level  predicted_level  residual
+The Tarrasque     30        39.912692 -9.912692
+    Archdevil     16        20.110349 -4.110349
+       Kobold      0         2.882072 -2.882072
+       Spider      0         2.844376 -2.844376
+    Jellyfish      0         2.804801 -2.804801
+     Scorpion      0         2.804801 -2.804801
+          Rat      0         2.791791 -2.791791
+          Orc      1         3.235612 -2.235612
+       Badger      1         3.232573 -2.232573
+     Beastman      1         3.224638 -2.224638
+
+Top 10 punch below their weight:
+                  name  level  predicted_level  residual
+Mordanticus The Flayed     19         7.056144 11.943856
+              Archmage     10         2.709257  7.290743
+            Rathgamnon     19        11.758025  7.241975
+                 Hydra     10         5.228994  4.771006
+The Wandering Merchant     15        10.322407  4.677593
+                  Lich     13         8.353222  4.646778
+      Viperian, Wizard      8         3.797348  4.202652
+               Vampire     11         7.160000  3.840000
+                 Druid      7         3.461572  3.538428
+                Medusa      8         4.469396  3.530604
+
+### Comparison
+
+model          features                                      R^2
+v1 full        6 incl. hp                                  0.997
+Model A        5, hp excluded                              0.817
+Model B        threat_score only                           0.789
+
+Each model has one job. The v1 full model is validation: its R^2 of 0.997 says the printed stats are internally consistent with the 1-hit-die-per-level rule, nothing more. Model A is interpretation: with HP out, its coefficients say how much AC, attack bonus, damage, and stat mods each buy at a given level, and its residuals point at monsters whose danger is not in those numbers (spellcasters and rider-effect monsters sharpen here). Model B is a single-metric difficulty check: it asks how much of printed LV one derived number recovers, and its residuals are candidates for where the metric and the designers disagree.

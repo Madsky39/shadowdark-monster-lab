@@ -89,7 +89,8 @@ v2 status (see [shadowdark-monster-lab-spec-v2.md](shadowdark-monster-lab-spec-v
 
 - [x] M9 -- Multipage restructure (above)
 - [x] M10 -- Combat metrics module (below)
-- [ ] M11-M16 -- not started
+- [x] M11 -- LV model v2 and reframed writeup (below)
+- [ ] M12-M16 -- not started
 
 ## EDA findings (M5)
 
@@ -116,28 +117,47 @@ Plots: `python src/analysis.py` writes to `reports/figures/`.
    narrows at higher LV bands, and best-single-attack round damage rises
    with LV band but with wide variance within each band.
 
-## LV model (M6)
+## LV model (M6, reframed in M11)
 
 Full report (coefficients, R², top-10 residuals both directions):
 `python src/analysis.py` writes it to `reports/lv_model.txt`.
 
 A plain `sklearn.linear_model.LinearRegression` predicting `level` from AC,
 HP, best attack bonus, best avg damage, best num attacks, and best stat mod
-gets **R² = 0.997**. That's almost entirely HP doing the work -- HP alone
-already correlates with LV at r=0.998 (see EDA finding 1), so this model is
-close to learning "HP predictor" and validating that with the other four
-predictors, whose coefficients (all under 0.06 in magnitude, mixed signs)
-should be read cautiously given how collinear they are with HP and LV.
+gets **R² = 0.997**. HP tracking LV at r = 0.998 is not a finding: Shadowdark
+gives monsters one hit die per level, so HP is derived from LV by
+construction. This model confirms the printed data matches the rules as
+written. It is a data-quality validation, not an insight, and its
+coefficients (all under 0.06 in magnitude, mixed signs) should not be
+interpreted. The models that are built to say something are in M11 below.
 
-Because the fit is this tight, the residuals are small in absolute terms
-(largest is only ~1.6 levels) -- there are no dramatic outliers, just mild
-ones. The monsters that punch *above* their weight (raw stats justify a
-higher LV than assigned) are mostly high-HP grapplers/ambushers -- Hydra,
-Roper, stone/clay Golems, Bulette. The monsters that punch *below* their
-weight (assigned a higher LV than stats justify) are almost all spellcasters
-or incorporeal/legendary types -- Archmage, Druid, Mage, Wraith, Ghost,
-Phoenix -- consistent with the EDA finding that their danger comes from
-spells/abilities rather than raw AC/HP/attack numbers.
+## LV model v2 (M11)
+
+Two models replace the v1 model as the ones worth reading, both in
+`reports/lv_model.txt` and rendered on the Insights page from the same fit
+functions.
+
+**Model A (no-HP model), R² = 0.817.** The v1 feature set with HP excluded:
+AC, best attack bonus, best avg damage, best num attacks, best stat mod.
+With HP out, the coefficients are interpretable. Attack bonus dominates at
++0.95 LV per point, followed by num attacks (+0.51) and best stat mod
+(+0.29); AC and avg damage contribute little at the margin (+0.17 and
++0.12). The outliers sharpen exactly as expected: the punch-below list is
+now nearly all spellcasters and rider-effect monsters (Mordanticus, Druid,
+Viperian Wizard, Lich, Dryad, Goblin Shaman, Rat Swarm), whose danger the
+attack parser cannot see.
+
+**Model B (threat model), R² = 0.789.** `level = 0.159 * threat_score +
+2.71`, with threat_score from M10. One derived number recovers most of
+printed LV. Its punch-below list recovers the v1 outlier roster (Archmage,
+Hydra, Medusa, Lich, Vampire, Druid): monsters whose printed LV prices in
+petrify, curses, regeneration, or spellcasting that no attack-math metric
+can measure.
+
+Comparison: v1 full model (R² 0.997) is validation, Model A (0.817) is
+interpretation, Model B (0.789) is a single-metric difficulty check. The
+drop from 0.997 to 0.82 is the honest size of the signal once the
+rules-derived HP column stops doing the work.
 
 ## Cross-system scaling (M7)
 
@@ -171,12 +191,12 @@ loading (`load_data`, `fit_models`) and the license footer live in
 another page, so there's one place data loading can drift from the reports/
 CLI, not several. Pages:
 
-1. **Insights** (default landing page): currently the v1 "LV Model
-   Findings" content (M6's R², coefficients chart, predicted-vs-actual
-   scatter, and both outlier tables from `lv_model_outliers()`), carried
-   over as-is. M11 replaces this with the no-HP and threat-score models;
-   M15 adds the archetype scatter and difficulty-validation summary as the
-   landing-page centerpiece.
+1. **Insights** (default landing page): the M11 LV model v2 content --
+   Model A (no-HP) with coefficients, predicted-vs-actual scatter, and
+   outlier tables; Model B (threat score) with the same; and the
+   three-model comparison table, with the v1 full model demoted to a
+   validation footnote. M15 adds the archetype scatter and
+   difficulty-validation summary as the landing-page centerpiece.
 2. **Shadowdark Bestiary**: filter the Shadowdark core bestiary by level
    range, alignment, and name search; see the filtered table and a live LV
    histogram. Unchanged from v1.

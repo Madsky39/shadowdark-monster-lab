@@ -24,8 +24,10 @@ from analysis import (  # noqa: E402  (path must be set before this import)
     fit_hp_scaling,
     fit_level_to_attack_bonus,
     fit_lv_model,
+    fit_lv_model_a,
+    fit_lv_threat_model,
     load_crosswalk_pairs,
-    load_sd_features,
+    load_sd_features_with_metrics,
     lv_model_outliers,
 )
 import build_crosswalk  # noqa: E402
@@ -92,7 +94,10 @@ def get_connection() -> sqlite3.Connection:
 
 @st.cache_data
 def load_data(_conn: sqlite3.Connection) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    sd_df = load_sd_features(_conn)
+    # sd_df carries the M10 metric columns (effective_dpr/effective_hp/
+    # threat_score/archetype_ratio) so the Insights models and future pages
+    # share one load path with the reports.
+    sd_df = load_sd_features_with_metrics(_conn)
     fe_df = pd.read_sql("SELECT * FROM fe_monsters", _conn)
     pairs = load_crosswalk_pairs(_conn)
     return sd_df, fe_df, pairs
@@ -102,6 +107,8 @@ def load_data(_conn: sqlite3.Connection) -> tuple[pd.DataFrame, pd.DataFrame, pd
 def fit_models(sd_df: pd.DataFrame, pairs: pd.DataFrame) -> dict:
     return {
         "lv": fit_lv_model(sd_df),
+        "lv_a": fit_lv_model_a(sd_df),
+        "lv_b": fit_lv_threat_model(sd_df),
         "cr_to_lv": fit_cr_to_lv(pairs),
         "hp_scaling": fit_hp_scaling(pairs),
         "ac_scaling": fit_ac_scaling(pairs),

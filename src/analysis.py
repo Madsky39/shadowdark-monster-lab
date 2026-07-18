@@ -1,4 +1,4 @@
-"""M5 (EDA) + M6 (LV model) + M7 (cross-system scaling).
+"""M5 (EDA) + M6 (LV model) + M7 (cross-system scaling) + M11 (LV model v2).
 
 load_sd_features() and load_crosswalk_pairs() are the two places that turn
 the raw tables into per-monster/per-pair feature tables; the EDA and both
@@ -66,6 +66,18 @@ def load_sd_features(conn: sqlite3.Connection) -> pd.DataFrame:
     )
     df["best_stat_mod"] = df[STAT_MOD_COLS].max(axis=1)
     return df
+
+
+def load_sd_features_with_metrics(conn: sqlite3.Connection) -> pd.DataFrame:
+    """load_sd_features() plus the four M10 metric columns (effective_dpr,
+    effective_hp, threat_score, archetype_ratio), computed at load time from
+    the same sd_attacks rows. This is the loader M11's threat model and the
+    Insights page share, so the report and the dashboard cannot drift."""
+    from metrics import add_combat_metrics
+
+    df = load_sd_features(conn)
+    attacks = pd.read_sql("SELECT * FROM sd_attacks", conn)
+    return add_combat_metrics(df, attacks)
 
 
 def eda_lv_correlations(df: pd.DataFrame) -> pd.Series:
@@ -190,9 +202,19 @@ LV_MODEL_FEATURES = [
     "best_stat_mod",
 ]
 
+# M11 Model A: the v1 feature set minus HP. Shadowdark monsters get one hit
+# die per level, so HP is mechanically derived from LV by construction --
+# leaving it in makes the model a data-quality validation (R^2 = 0.997) with
+# uninterpretable leftover coefficients; taking it out is what makes the
+# remaining coefficients mean something.
+LV_MODEL_A_FEATURES = [f for f in LV_MODEL_FEATURES if f != "hp"]
 
-def fit_lv_model(df: pd.DataFrame) -> dict:
-    """M6: interpretable linear regression of LV on AC/HP/attack bonus/avg damage/num attacks/best stat mod.
+
+def fit_lv_model(df: pd.DataFrame, features: list[str] = LV_MODEL_FEATURES) -> dict:
+    """M6/M11: linear regression of LV on the given feature list.
+
+    Defaults to the v1 (M6) feature set; M11's Model A and Model B pass
+    LV_MODEL_A_FEATURES and ["threat_score"] respectively.
 
     A handful of monsters (e.g. pure spellcasters whose only listed attack
     is "1 spell +2", with no damage dice) have no avg_damage for their best
@@ -205,9 +227,9 @@ def fit_lv_model(df: pd.DataFrame) -> dict:
     from sklearn.linear_model import LinearRegression
 
     model_df = df.copy()
-    model_df[LV_MODEL_FEATURES] = model_df[LV_MODEL_FEATURES].fillna(0)
+    model_df[features] = model_df[features].fillna(0)
 
-    X = model_df[LV_MODEL_FEATURES]
+    X = model_df[features]
     y = model_df["level"]
 
     model = LinearRegression()
@@ -216,17 +238,32 @@ def fit_lv_model(df: pd.DataFrame) -> dict:
     model_df["predicted_level"] = model.predict(X)
     model_df["residual"] = model_df["level"] - model_df["predicted_level"]
 
-    coefficients = pd.Series(model.coef_, index=LV_MODEL_FEATURES).sort_values(
+    coefficients = pd.Series(model.coef_, index=features).sort_values(
         ascending=False
     )
 
     return {
         "model": model,
+        "features": features,
         "coefficients": coefficients,
         "intercept": model.intercept_,
         "r_squared": model.score(X, y),
         "df": model_df,
     }
+
+
+def fit_lv_model_a(df: pd.DataFrame) -> dict:
+    """M11 Model A: the no-HP model. Its coefficients are the interpretable ones."""
+    return fit_lv_model(df, features=LV_MODEL_A_FEATURES)
+
+
+def fit_lv_threat_model(df: pd.DataFrame) -> dict:
+    """M11 Model B: LV from threat_score alone (single feature, from M10).
+
+    df must carry the metric columns -- load it with
+    load_sd_features_with_metrics(), not plain load_sd_features().
+    """
+    return fit_lv_model(df, features=["threat_score"])
 
 
 def lv_model_outliers(result: dict, n: int = 10) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -264,6 +301,85 @@ def report_lv_model(result: dict, n: int = 10) -> str:
     lines.append("")
     lines.append(f"Top {n} punch below their weight (assigned a higher LV than stats justify):")
     lines.append(punches_below.to_string(index=False))
+
+    return "\n".join(lines)
+
+
+def report_lv_models_v2(v1_result: dict, a_result: dict, b_result: dict, n: int = 10) -> str:
+    """M11: Model A, Model B, and the comparison table, appended to the M6 report."""
+    lines = ["", "", "## LV model v2 (M11)", ""]
+    lines.append(
+        "HP tracks LV at r = 0.998 because Shadowdark gives monsters one hit die "
+        "per level: HP is derived from LV by construction, not discovered. The v1 "
+        "model above is therefore a data-quality validation (the data matches the "
+        "rules as written), not an insight about what makes monsters dangerous. "
+        "The two models below are the ones built to say something."
+    )
+
+    lines.append("")
+    lines.append("### Model A: no-HP model")
+    lines.append("")
+    lines.append(f"Features: {', '.join(a_result['features'])}")
+    lines.append(f"R-squared: {a_result['r_squared']:.3f}")
+    lines.append(f"Intercept: {a_result['intercept']:.3f}")
+    lines.append("Coefficients:")
+    for name, coef in a_result["coefficients"].items():
+        lines.append(f"  {name}: {coef:+.4f}")
+
+    a_above, a_below = lv_model_outliers(a_result, n)
+    lines.append("")
+    lines.append(f"Top {n} punch above their weight (stats justify a higher LV than assigned):")
+    lines.append(a_above.to_string(index=False))
+    lines.append("")
+    lines.append(f"Top {n} punch below their weight (assigned a higher LV than stats justify):")
+    lines.append(a_below.to_string(index=False))
+
+    lines.append("")
+    lines.append("### Model B: threat model")
+    lines.append("")
+    lines.append(
+        f"level = {b_result['coefficients'].iloc[0]:.4f} * threat_score "
+        f"+ {b_result['intercept']:.4f}"
+    )
+    lines.append(f"R-squared: {b_result['r_squared']:.3f}")
+    lines.append(
+        "threat_score = sqrt(effective_dpr * effective_hp), from src/metrics.py. "
+        "Crit bonus damage is ignored in effective_dpr for simplicity."
+    )
+
+    b_above, b_below = lv_model_outliers(b_result, n)
+    lines.append("")
+    lines.append(f"Top {n} punch above their weight:")
+    lines.append(b_above.to_string(index=False))
+    lines.append("")
+    lines.append(f"Top {n} punch below their weight:")
+    lines.append(b_below.to_string(index=False))
+
+    lines.append("")
+    lines.append("### Comparison")
+    lines.append("")
+    lines.append(f"{'model':<14} {'features':<42} {'R^2':>6}")
+    lines.append(
+        f"{'v1 full':<14} {'6 incl. hp':<42} {v1_result['r_squared']:>6.3f}"
+    )
+    lines.append(
+        f"{'Model A':<14} {'5, hp excluded':<42} {a_result['r_squared']:>6.3f}"
+    )
+    lines.append(
+        f"{'Model B':<14} {'threat_score only':<42} {b_result['r_squared']:>6.3f}"
+    )
+    lines.append("")
+    lines.append(
+        "Each model has one job. The v1 full model is validation: its R^2 of "
+        f"{v1_result['r_squared']:.3f} says the printed stats are internally consistent "
+        "with the 1-hit-die-per-level rule, nothing more. Model A is interpretation: "
+        "with HP out, its coefficients say how much AC, attack bonus, damage, and "
+        "stat mods each buy at a given level, and its residuals point at monsters "
+        "whose danger is not in those numbers (spellcasters and rider-effect "
+        "monsters sharpen here). Model B is a single-metric difficulty check: it "
+        "asks how much of printed LV one derived number recovers, and its residuals "
+        "are candidates for where the metric and the designers disagree."
+    )
 
     return "\n".join(lines)
 
@@ -374,7 +490,7 @@ def main() -> None:
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     try:
-        df = load_sd_features(conn)
+        df = load_sd_features_with_metrics(conn)
 
         corr = eda_lv_correlations(df)
         print("Q1 correlations with level:")
@@ -397,7 +513,9 @@ def main() -> None:
         print()
 
         result = fit_lv_model(df)
-        report = report_lv_model(result)
+        a_result = fit_lv_model_a(df)
+        b_result = fit_lv_threat_model(df)
+        report = report_lv_model(result) + report_lv_models_v2(result, a_result, b_result)
         print(report)
         REPORT_PATH.write_text(report + "\n", encoding="utf-8")
         print()
