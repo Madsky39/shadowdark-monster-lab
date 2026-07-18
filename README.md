@@ -90,7 +90,9 @@ v2 status (see [shadowdark-monster-lab-spec-v2.md](shadowdark-monster-lab-spec-v
 - [x] M9 -- Multipage restructure (above)
 - [x] M10 -- Combat metrics module (below)
 - [x] M11 -- LV model v2 and reframed writeup (below)
-- [ ] M12-M16 -- not started
+- [x] M13 -- Spells page (see dashboard section; built before M12 per the
+      spec's suggested order)
+- [ ] M12, M14-M16 -- not started
 
 ## EDA findings (M5)
 
@@ -211,8 +213,12 @@ CLI, not several. Pages:
    bonus" column to translate from); it's `fit_level_to_attack_bonus()`,
    fit on Shadowdark's own LV-to-attack-bonus relationship and applied to
    the predicted LV. Unchanged from v1.
-5. **Spells**: new in v2. Minimal for now (table of all 85 core spells) --
-   tier/class filters and the tier-vs-effect heatmap arrive in M13.
+5. **Spells**: filter the 85 core spells by tier, class, and name or
+   description search; the table shows each spell's effect tags, and the
+   tier-vs-effect heatmap renders live from the same
+   `analyze_spells.py` functions that write the saved report figure
+   (`EFFECT_KEYWORDS` lives in exactly one place). The keyword-net caveat
+   stays visible on the page.
 6. **Combat Simulator**: the Monte Carlo stretch goal (see below), with
    inputs for the monster, party size/level/class/gear, and trial count,
    running live in-browser (5000 trials resolves well under a second).

@@ -77,13 +77,19 @@ def tier_vs_effect_table(df: pd.DataFrame) -> pd.DataFrame:
     return pd.crosstab(exploded["tier"], exploded["effect_tags"])
 
 
-def plot_tier_vs_effect(table: pd.DataFrame) -> None:
-    fig = px.imshow(
+def make_tier_vs_effect_fig(table: pd.DataFrame):
+    """The tier-vs-effect heatmap figure. M13's Spells page renders this same
+    figure live, so the page and the saved report figure cannot drift."""
+    return px.imshow(
         table,
         labels={"x": "effect tag", "y": "tier", "color": "spell count"},
         title="Shadowdark core spells: tier vs. effect tag",
         text_auto=True,
     )
+
+
+def plot_tier_vs_effect(table: pd.DataFrame) -> None:
+    fig = make_tier_vs_effect_fig(table)
     fig.write_html(FIGURES_DIR / "spell_tier_vs_effect.html", include_plotlyjs="cdn")
 
 
