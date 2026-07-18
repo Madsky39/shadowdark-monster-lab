@@ -88,7 +88,8 @@ Stretch goals:
 v2 status (see [shadowdark-monster-lab-spec-v2.md](shadowdark-monster-lab-spec-v2.md)):
 
 - [x] M9 -- Multipage restructure (above)
-- [ ] M10-M16 -- not started
+- [x] M10 -- Combat metrics module (below)
+- [ ] M11-M16 -- not started
 
 ## EDA findings (M5)
 
@@ -201,6 +202,44 @@ CLI, not several. Pages:
 `ensure_database()` (in `app/common.py`) also runs the spells ingest on a
 cold start now, since `sd_spells` comes from the same freely licensed
 source as the bestiary and the ingest is fast.
+
+## Combat metrics (M10)
+
+`src/metrics.py` computes derived combat metrics from `sd_monsters` +
+`sd_attacks` at load time (pure functions, no I/O, nothing stored in the
+DB). The formulas:
+
+- **effective_dpr** -- expected damage per round against a reference AC.
+  Per attack clause: `num_attacks * avg_damage * p_hit`, where
+  `p_hit = clamp((21 + attack_bonus - ac_ref) / 20, 0.05, 0.95)`. The
+  floor and ceiling encode "natural 1 always misses" / "natural 20 always
+  hits". Crit bonus damage is ignored for simplicity. `sd_attacks` does
+  not preserve the or/and grouping of attack routines (see M3), so each
+  row is treated as an alternative and the best (highest expected damage
+  against the reference AC) one is used, the same choice v1's `best_*`
+  columns made.
+- **effective_hp** -- raw damage a reference attacker must output to drop
+  the monster: `hp / p_hit(atk_ref vs monster AC)`, same clamp.
+- **threat_score** -- `sqrt(effective_dpr * effective_hp)`, the candidate
+  single-number difficulty metric (same construction idea as the 5e DMG's
+  offensive/defensive CR average). Correlates with printed LV at r=0.89
+  on the core bestiary.
+- **archetype_ratio** -- `effective_dpr / effective_hp`. Not a level
+  predictor (offense and defense both rise with level, so the ratio
+  cancels the level signal; r=0.14 with LV): it is an archetype axis,
+  high = glass cannon, low = sponge/tank.
+
+Reference constants, both data-derived (documented in the module, enforced
+by tests): `AC_REF = 17` is the sim's armor math for a mid-level PC
+(10 + DEX +1 + chainmail +4 + shield +2); `ATK_REF = 3.87` is
+`fit_level_to_attack_bonus()` evaluated at the median core monster LV
+(5.0).
+
+Tests live in `tests/` (introduced with this milestone): run
+`python -m pytest tests/` after building the DB. Hand-computed expected
+values for real monsters, clamp edge cases, and constants-consistency
+checks that fail if the committed data drifts from the documented
+derivations.
 
 ## Stretch goal: Monte Carlo combat simulator
 

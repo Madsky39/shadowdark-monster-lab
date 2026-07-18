@@ -11,3 +11,4 @@ data/raw/*
 data/monsterlab.db
 
 reports/figures/
+.pytest_cache/
