@@ -7,8 +7,10 @@ Streamlit dashboard with a monster converter tab.
 
 **Live dashboard: [monsterlab.streamlit.app](https://monsterlab.streamlit.app)**
 
-See [shadowdark-monster-lab-spec.md](shadowdark-monster-lab-spec.md) for the full
-project spec, schema, and milestone list.
+See [shadowdark-monster-lab-spec.md](shadowdark-monster-lab-spec.md) for the v1 spec
+(M1-M8 plus stretch goals, complete) and
+[shadowdark-monster-lab-spec-v2.md](shadowdark-monster-lab-spec-v2.md) for the v2 spec
+(multipage restructure, new metrics, empirical difficulty study; in progress).
 
 ## Setup
 
@@ -27,6 +29,7 @@ python src/ingest_shadowdark.py   # M1: sd_monsters
 python src/ingest_open5e.py       # M2: fe_monsters (cached to data/raw/open5e/)
 python src/parse_stats.py         # M3: sd_attacks
 python src/build_crosswalk.py     # M4: crosswalk
+python src/ingest_spells.py       # sd_spells: 85 core spells
 python src/analysis.py            # M5-M7: EDA + LV model + cross-system scaling reports/plots
 ```
 
@@ -80,6 +83,12 @@ Stretch goals:
 - [x] Monte Carlo combat simulator (below)
 - [x] Spell data ingest and analysis (below)
 - [x] PDF stat block intake via shadowdark-parser for owned books (below)
+- [x] PDF stat block intake parsed locally, no Node.js required (below)
+
+v2 status (see [shadowdark-monster-lab-spec-v2.md](shadowdark-monster-lab-spec-v2.md)):
+
+- [x] M9 -- Multipage restructure (above)
+- [ ] M10-M16 -- not started
 
 ## EDA findings (M5)
 
@@ -151,32 +160,47 @@ better):
 These three formulas are the conversion math M8's dashboard tab will use to
 turn a 5e monster's CR/HP/AC into suggested Shadowdark LV/HP/AC.
 
-## Dashboard (M8)
+## Dashboard (M8, restructured to multipage in M9)
 
-`streamlit run app/dashboard.py` -- four tabs:
+`streamlit run app/dashboard.py` -- a multipage app using `st.Page` /
+`st.navigation`. `app/dashboard.py` is just the entrypoint (runs
+`ensure_database()`, defines the navigation); the shared cached data/model
+loading (`load_data`, `fit_models`) and the license footer live in
+`app/common.py`, which every page imports from -- no page imports from
+another page, so there's one place data loading can drift from the reports/
+CLI, not several. Pages:
 
-1. **Bestiary Explorer**: filter the Shadowdark core bestiary by level range,
-   alignment, and name search; see the filtered table and a live LV
-   histogram.
-2. **LV Model Findings**: M6's R², coefficients chart, predicted-vs-actual
-   scatter, and both outlier tables (punches above/below weight) from
-   `lv_model_outliers()`.
-3. **5e -> Shadowdark Converter**: pick an SRD monster from a dropdown (auto-
-   fills its CR/HP/AC) or enter stats manually, and get a suggested
-   Shadowdark stat block (LV/AC/HP/attack bonus) using the M7 fits, plus an
-   expander showing the exact formulas used. Attack bonus isn't a direct
+1. **Insights** (default landing page): currently the v1 "LV Model
+   Findings" content (M6's R², coefficients chart, predicted-vs-actual
+   scatter, and both outlier tables from `lv_model_outliers()`), carried
+   over as-is. M11 replaces this with the no-HP and threat-score models;
+   M15 adds the archetype scatter and difficulty-validation summary as the
+   landing-page centerpiece.
+2. **Shadowdark Bestiary**: filter the Shadowdark core bestiary by level
+   range, alignment, and name search; see the filtered table and a live LV
+   histogram. Unchanged from v1.
+3. **5e Bestiary**: new in v2. Minimal for now (name search over the SRD
+   monster list) -- CR/type/size filters, a live CR histogram, a predicted
+   Shadowdark LV column, and crosswalk matches arrive in M12.
+4. **Converter**: pick an SRD monster from a dropdown (auto-fills its
+   CR/HP/AC) or enter stats manually, and get a suggested Shadowdark stat
+   block (LV/AC/HP/attack bonus) using the M7 fits, plus an expander
+   showing the exact formulas used. Attack bonus isn't a direct
    cross-system fit (M7 didn't cover it -- there's no single 5e "attack
    bonus" column to translate from); it's `fit_level_to_attack_bonus()`,
    fit on Shadowdark's own LV-to-attack-bonus relationship and applied to
-   the predicted LV.
-4. **Combat Simulator**: the Monte Carlo stretch goal (see below), with
+   the predicted LV. Unchanged from v1.
+5. **Spells**: new in v2. Minimal for now (table of all 85 core spells) --
+   tier/class filters and the tier-vs-effect heatmap arrive in M13.
+6. **Combat Simulator**: the Monte Carlo stretch goal (see below), with
    inputs for the monster, party size/level/class/gear, and trial count,
    running live in-browser (5000 trials resolves well under a second).
+   Still the v1 uniform party_size x party_level version; rebuilt with real
+   per-PC composition in M14.
 
-All four tabs share cached data/model loading (`load_data`/`fit_models` in
-`app/dashboard.py`) built on the same `src/analysis.py` and `src/combat_sim.py`
-functions used by the M5-M7 reports and the standalone simulator CLI, so the
-dashboard and the written reports/CLI can't drift apart from each other.
+`ensure_database()` (in `app/common.py`) also runs the spells ingest on a
+cold start now, since `sd_spells` comes from the same freely licensed
+source as the bestiary and the ingest is fast.
 
 ## Stretch goal: Monte Carlo combat simulator
 
@@ -275,16 +299,61 @@ field mapping should be exact, but if a future shadowdark-parser release
 changes its schema, re-verify against real output before trusting it on a
 real book.
 
+### Alternative: parsing a PDF directly, no Node.js required
+
+`src/parse_pdf_statblocks.py` is a second front door into the same
+`sd_monsters_custom` / `sd_attacks_custom` tables that skips the Node.js
+tool and the copy-paste step entirely:
+
+```bash
+python src/parse_pdf_statblocks.py --pdf mybook.pdf --source "Cursed Scrolls 1"
+```
+
+It reads the PDF locally with `pdfplumber` (a pure-Python dependency, listed
+in `requirements.txt` but never imported by `app/dashboard.py` or any
+`app/pages_/*.py` -- the deployed app never touches it), extracts each stat
+block with a regex grammar matching the Shadowdark core rulebook's layout
+(`NAME` / `LV n, Alignment, Type` / `AC n HP n ATK ... MV ...` /
+`S x D x C x I x W x CH x`), and calls the same `upsert_monster()` from
+`ingest_pdf_statblocks.py` to write it -- so there's exactly one place that
+owns the DB write and upsert-by-name logic, not two. Attack clauses reuse
+`parse_stats.SPLIT_CLAUSES_RE` / `parse_clause()` directly, the same M3
+grammar the core bestiary already uses, so avg_damage is computed exactly
+the same way for a PDF monster as for a core one.
+
+This is a best-effort extraction, not a guaranteed-correct parser --
+third-party books format stat blocks differently. Use `--debug` to print
+every field it matched before anything is written, and `--dry-run` to parse
+without touching the database:
+
+```bash
+python src/parse_pdf_statblocks.py --pdf mybook.pdf --source "..." --debug --dry-run
+```
+
+A monster with an unparseable attack clause still loads (the bad clause is
+logged and dropped, same as M3); a monster the regex can't find at all
+isn't silently skipped -- it just won't appear in the debug output or the
+matched count, so check that count against the book's actual monster count.
+Validated against a hand-written text fixture matching the documented
+layout, not a real third-party PDF (none was available in this
+environment) -- if your book's layout differs, adjust `MONSTER_RE` in that
+file for it rather than trusting a partial import. Same as
+`ingest_pdf_statblocks.py`, both tables live only in the gitignored
+`data/monsterlab.db`; nothing from a book you own is ever committed or
+reaches the deployed app.
+
 ## Deployment: Streamlit Community Cloud
 
 Live at **[monsterlab.streamlit.app](https://monsterlab.streamlit.app)**.
 
 `data/monsterlab.db` is gitignored (it's a build artifact, not source), so
 a fresh clone -- including a fresh Streamlit Cloud container -- doesn't
-have it. `app/dashboard.py` handles that itself: `ensure_database()` runs
-the ingest/parse/crosswalk pipeline once on first load if the DB is
-missing, using the small cached JSON already committed at
-`data/raw/shadowdark/` and `data/raw/open5e/` (both freely-licensed source
-data, unlike the PDF-intake stretch goal's tables). That first load takes
-a few seconds longer; every load after is instant, same as running
-`run_all.py` locally then launching normally.
+have it. `app/dashboard.py` handles that itself: it calls
+`ensure_database()` (defined in `app/common.py`) before building the
+navigation, which runs the ingest/parse/crosswalk/spells pipeline once on
+first load if the DB is missing, using the small cached JSON already
+committed at `data/raw/shadowdark/` and `data/raw/open5e/` (both
+freely-licensed source data, unlike the PDF-intake stretch goals' tables,
+which are local-only and never run here). That first load takes a few
+seconds longer; every load after is instant, same as running `run_all.py`
+locally then launching normally.

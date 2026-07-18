@@ -18,6 +18,7 @@ STEPS = [
     ROOT / "src" / "ingest_open5e.py",
     ROOT / "src" / "parse_stats.py",
     ROOT / "src" / "build_crosswalk.py",
+    ROOT / "src" / "ingest_spells.py",
     ROOT / "src" / "analysis.py",
 ]
 
