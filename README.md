@@ -5,6 +5,8 @@ store it in SQLite, analyze what actually drives Shadowdark monster level (LV),
 derive an empirical 5e-to-Shadowdark conversion model, and serve it all from a
 Streamlit dashboard with a monster converter tab.
 
+**Live dashboard: [monsterlab.streamlit.app](https://monsterlab.streamlit.app)**
+
 See [shadowdark-monster-lab-spec.md](shadowdark-monster-lab-spec.md) for the full
 project spec, schema, and milestone list.
 
@@ -273,7 +275,9 @@ field mapping should be exact, but if a future shadowdark-parser release
 changes its schema, re-verify against real output before trusting it on a
 real book.
 
-## Deploying the dashboard to Streamlit Community Cloud
+## Deployment: Streamlit Community Cloud
+
+Live at **[monsterlab.streamlit.app](https://monsterlab.streamlit.app)**.
 
 `data/monsterlab.db` is gitignored (it's a build artifact, not source), so
 a fresh clone -- including a fresh Streamlit Cloud container -- doesn't
@@ -285,15 +289,10 @@ data, unlike the PDF-intake stretch goal's tables). That first load takes
 a few seconds longer; every load after is instant, same as running
 `run_all.py` locally then launching normally.
 
-To deploy:
-
-1. Push this repo to GitHub (already done if you're reading this there).
-2. Go to [share.streamlit.io](https://share.streamlit.io), sign in with
-   GitHub, and click "New app."
-3. Pick this repo, the `main` branch, and set the main file path to
-   `app/dashboard.py`.
-4. Deploy. Streamlit Cloud installs everything in `requirements.txt`
-   automatically -- no other config needed.
-
-This is a manual step you do yourself in Streamlit's UI (it's tied to your
-GitHub/Streamlit account), not something that can be scripted from here.
+To redeploy elsewhere, or if you fork this: push to GitHub, go to
+[share.streamlit.io](https://share.streamlit.io), sign in with GitHub,
+click "New app," pick the repo/branch, set the main file path to
+`app/dashboard.py`, and deploy -- Streamlit Cloud installs
+`requirements.txt` automatically, no other config needed. That's a manual
+step tied to your own GitHub/Streamlit account, not something scriptable
+from here.
