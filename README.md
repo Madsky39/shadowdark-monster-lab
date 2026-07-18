@@ -90,9 +90,10 @@ v2 status (see [shadowdark-monster-lab-spec-v2.md](shadowdark-monster-lab-spec-v
 - [x] M9 -- Multipage restructure (above)
 - [x] M10 -- Combat metrics module (below)
 - [x] M11 -- LV model v2 and reframed writeup (below)
+- [x] M12 -- 5e Bestiary page (see dashboard section)
 - [x] M13 -- Spells page (see dashboard section; built before M12 per the
       spec's suggested order)
-- [ ] M12, M14-M16 -- not started
+- [ ] M14-M16 -- not started
 
 ## EDA findings (M5)
 
@@ -202,9 +203,12 @@ CLI, not several. Pages:
 2. **Shadowdark Bestiary**: filter the Shadowdark core bestiary by level
    range, alignment, and name search; see the filtered table and a live LV
    histogram. Unchanged from v1.
-3. **5e Bestiary**: new in v2. Minimal for now (name search over the SRD
-   monster list) -- CR/type/size filters, a live CR histogram, a predicted
-   Shadowdark LV column, and crosswalk matches arrive in M12.
+3. **5e Bestiary**: filter the 322 SRD monsters by CR range, type, size,
+   and name search, with a live CR histogram. A predicted SD LV column
+   applies the same M7 CR-to-LV fit the Converter uses (shown to one
+   decimal; the Converter rounds it to a whole LV), and an sd_crosswalk
+   column names the matched Shadowdark monster for the 143 monsters in the
+   M4 crosswalk.
 4. **Converter**: pick an SRD monster from a dropdown (auto-fills its
    CR/HP/AC) or enter stats manually, and get a suggested Shadowdark stat
    block (LV/AC/HP/attack bonus) using the M7 fits, plus an expander
