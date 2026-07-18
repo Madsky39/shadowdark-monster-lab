@@ -77,7 +77,7 @@ Stretch goals:
 
 - [x] Monte Carlo combat simulator (below)
 - [x] Spell data ingest and analysis (below)
-- [ ] PDF stat block intake via shadowdark-parser for owned books
+- [x] PDF stat block intake via shadowdark-parser for owned books (below)
 
 ## EDA findings (M5)
 
@@ -230,3 +230,45 @@ of tiers 1/2, dropping to 0% at tier 3, then back up to 13% at tier 5).
 **The wizard:priest split is stable across all five tiers** (roughly 2:1
 wizard-leaning at every tier, no tier where one class dominates more than
 another).
+
+## Stretch goal: PDF stat block intake for owned books
+
+This project only ever ingests freely-licensed data directly (the
+Shadowdark core JSON, the 5e SRD). Stat blocks from other books you own --
+Cursed Scrolls, third-party products -- can't be fetched or committed here;
+per [shadowdark-parser](https://github.com/ashleytowner/shadowdark-parser)'s
+own README, JSON derived from them "should only be used for personal use."
+So the workflow is split across a tool boundary:
+
+1. Copy the statblock text out of your own PDF.
+2. Run it through shadowdark-parser yourself -- a separate, Node-based CLI
+   tool, **not** a dependency of this Python project:
+   ```bash
+   npx shadowdark-parser -b -o parsed.json your_statblocks.txt
+   ```
+3. Point this script at that JSON:
+   ```bash
+   python src/ingest_pdf_statblocks.py --input parsed.json --source "Cursed Scrolls 1"
+   ```
+
+That loads monsters into `sd_monsters_custom` / `sd_attacks_custom` --
+same shape as the core `sd_monsters`/`sd_attacks`, plus a `source` column
+for provenance across however many books you process. Unlike the core
+ingest scripts, this one does **not** drop-and-rebuild on every run (your
+personal library accumulates over time); instead each monster is upserted
+by name, so re-running on the same file updates rather than duplicates.
+Both tables live inside `data/monsterlab.db`, which is gitignored, so
+nothing derived from a book you own is ever committed. Attack damage is
+parsed by reusing `parse_damage()` from `parse_stats.py` (M3), so a Cursed
+Scrolls monster's avg_damage is computed exactly the same way a core
+monster's is. Entries with a non-numeric level/AC/HP (shadowdark-parser
+allows a variable stat like `*`) are logged and skipped rather than
+crashing the ingest, same philosophy as M3's parse failures.
+
+Caveat: this environment has no Node.js/npm, so the integration was
+validated against a hand-built JSON fixture matching shadowdark-parser's
+documented output schema (from reading its `entity.ts`/`statblock.ts`/
+`attacks.ts` source directly) rather than the actual tool's output. The
+field mapping should be exact, but if a future shadowdark-parser release
+changes its schema, re-verify against real output before trusting it on a
+real book.
