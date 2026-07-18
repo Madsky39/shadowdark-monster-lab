@@ -37,6 +37,19 @@ import parse_stats  # noqa: E402
 DB_PATH = ROOT / "data" / "monsterlab.db"
 
 
+def _has_table(table: str) -> bool:
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        return (
+            conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table,)
+            ).fetchone()
+            is not None
+        )
+    finally:
+        conn.close()
+
+
 def ensure_database() -> None:
     """Cloud deploys start from a fresh checkout with no monsterlab.db (it's gitignored,
     a build artifact -- see README). Build it once from the committed raw JSON caches
@@ -46,20 +59,30 @@ def ensure_database() -> None:
     ingest is fast and comes from the same freely licensed source as the bestiary, so
     it's included; the PDF-intake stretch goal (sd_monsters_custom/sd_attacks_custom)
     is local-only and never runs here (see src/parse_pdf_statblocks.py /
-    src/ingest_pdf_statblocks.py)."""
-    if DB_PATH.exists():
+    src/ingest_pdf_statblocks.py).
+
+    Streamlit Cloud redeploys don't necessarily wipe the container's filesystem, so a
+    DB built by an older version of this function (before sd_spells existed) can still
+    be sitting there -- DB_PATH.exists() alone would wrongly skip the top-up and every
+    page reading sd_spells would crash. Check for the specific table a new version
+    added rather than just file presence, so upgrading in place also works."""
+    if not DB_PATH.exists():
+        with st.spinner("First run: building the database from cached data..."):
+            ingest_shadowdark.main()
+            conn = sqlite3.connect(DB_PATH)
+            try:
+                pages = ingest_open5e.fetch_pages(refresh=False)
+                ingest_open5e.build_fe_monsters(conn, pages)
+            finally:
+                conn.close()
+            parse_stats.main()
+            build_crosswalk.main()
+            ingest_spells.main()
         return
-    with st.spinner("First run: building the database from cached data..."):
-        ingest_shadowdark.main()
-        conn = sqlite3.connect(DB_PATH)
-        try:
-            pages = ingest_open5e.fetch_pages(refresh=False)
-            ingest_open5e.build_fe_monsters(conn, pages)
-        finally:
-            conn.close()
-        parse_stats.main()
-        build_crosswalk.main()
-        ingest_spells.main()
+
+    if not _has_table("sd_spells"):
+        with st.spinner("Adding spell data..."):
+            ingest_spells.main()
 
 
 @st.cache_resource
