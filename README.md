@@ -95,7 +95,7 @@ v2 status (see [shadowdark-monster-lab-spec-v2.md](shadowdark-monster-lab-spec-v
       spec's suggested order)
 - [x] M14 -- Combat simulator v2 (below)
 - [x] M15 -- Empirical difficulty validation (below)
-- [ ] M16 (optional) -- not started
+- [x] M16 -- Custom-data gating polish (below)
 
 ## EDA findings (M5)
 
@@ -478,6 +478,37 @@ file for it rather than trusting a partial import. Same as
 `ingest_pdf_statblocks.py`, both tables live only in the gitignored
 `data/monsterlab.db`; nothing from a book you own is ever committed or
 reaches the deployed app.
+
+## Custom-data features (M16, local only)
+
+Everything that touches the personal-use PDF-intake tables
+(`sd_monsters_custom`/`sd_attacks_custom`) is gated behind
+`has_custom_data()` in `app/common.py`, which requires all three of: the
+table exists, it has rows, and the environment opts in with
+`MONSTERLAB_LOCAL=1`. The env var is belt-and-suspenders for the licensing
+wall: the deployed app never sets it, so even an accidentally committed DB
+could not light these features up there. The gating logic is covered in
+`tests/test_gating.py`.
+
+```bash
+MONSTERLAB_LOCAL=1 streamlit run app/dashboard.py
+```
+
+With the gate open:
+
+- The **Shadowdark Bestiary** unions core rows (tagged `Core`) with your
+  custom monsters and gains a source filter, plus a refresh button that
+  clears the data cache after a CLI ingest runs while the app is up.
+- The **Combat Simulator** monster dropdown includes custom entries, built
+  through the same feature derivation and `monster_from_row()` as core
+  monsters.
+- **Insights** gains a balance-check section scoring each custom monster
+  against the core-fit Model A and threat model: what LV would these stats
+  predict for a core monster, and the delta against the printed LV.
+
+There is no upload widget and never will be on the deployed app; custom
+intake is CLI-only and local-only (`src/ingest_pdf_statblocks.py` /
+`src/parse_pdf_statblocks.py`).
 
 ## Deployment: Streamlit Community Cloud
 

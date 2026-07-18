@@ -7,6 +7,7 @@ the CLI tools all stay backed by the same src/ functions (see design
 principle 2, "no drift," in the spec).
 """
 
+import os
 import sqlite3
 import sys
 from pathlib import Path
@@ -27,9 +28,11 @@ from analysis import (  # noqa: E402  (path must be set before this import)
     fit_lv_model_a,
     fit_lv_threat_model,
     load_crosswalk_pairs,
+    load_sd_features,
     load_sd_features_with_metrics,
     lv_model_outliers,
 )
+from metrics import add_combat_metrics  # noqa: E402
 import build_crosswalk  # noqa: E402
 import ingest_open5e  # noqa: E402
 import ingest_shadowdark  # noqa: E402
@@ -114,6 +117,46 @@ def fit_models(sd_df: pd.DataFrame, pairs: pd.DataFrame) -> dict:
         "ac_scaling": fit_ac_scaling(pairs),
         "level_to_bonus": fit_level_to_attack_bonus(sd_df),
     }
+
+
+def has_custom_data(conn: sqlite3.Connection) -> bool:
+    """Gate for every feature that touches the personal-use PDF-intake tables
+    (sd_monsters_custom/sd_attacks_custom, see the licensing wall in the
+    spec). True only when the table exists AND has rows AND the environment
+    opts in with MONSTERLAB_LOCAL=1 -- the env var is belt-and-suspenders so
+    that even an accidentally committed DB could not light these features up
+    on the deployed app, which never sets it.
+
+    Deliberately not cached: it must notice a CLI ingest that ran while the
+    app was up.
+    """
+    if os.environ.get("MONSTERLAB_LOCAL") != "1":
+        return False
+    exists = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='sd_monsters_custom'"
+    ).fetchone()
+    if exists is None:
+        return False
+    return conn.execute("SELECT COUNT(*) FROM sd_monsters_custom").fetchone()[0] > 0
+
+
+@st.cache_data
+def load_custom_features(_conn: sqlite3.Connection) -> pd.DataFrame:
+    """Custom monsters through the same feature derivation and metrics as
+    core (load_sd_features + add_combat_metrics over the custom tables).
+    Only call behind has_custom_data()."""
+    df = load_sd_features(_conn, "sd_monsters_custom", "sd_attacks_custom")
+    attacks = pd.read_sql("SELECT * FROM sd_attacks_custom", _conn)
+    return add_combat_metrics(df, attacks)
+
+
+def render_refresh_button() -> None:
+    """After a CLI ingest while the app is running, the cached loaders still
+    hold the old rows -- this clears them (the M16 'clear st.cache_data
+    after any runtime ingest' requirement)."""
+    if st.button("Refresh data (after running an ingest)"):
+        st.cache_data.clear()
+        st.rerun()
 
 
 def apply_cross_system_fit(result: dict, x: float) -> float:

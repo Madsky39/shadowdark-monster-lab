@@ -34,8 +34,12 @@ DIFFICULTY_REPORT_PATH = ROOT / "reports" / "difficulty_validation.txt"
 STAT_MOD_COLS = ["str_mod", "dex_mod", "con_mod", "int_mod", "wis_mod", "cha_mod"]
 
 
-def load_sd_features(conn: sqlite3.Connection) -> pd.DataFrame:
-    """One row per sd_monster with LV-model features derived from sd_attacks.
+def load_sd_features(
+    conn: sqlite3.Connection,
+    monsters_table: str = "sd_monsters",
+    attacks_table: str = "sd_attacks",
+) -> pd.DataFrame:
+    """One row per monster with LV-model features derived from its attacks.
 
     A monster can list several attacks (alternative options joined by "or",
     or a multiattack routine joined by "and" -- sd_attacks doesn't keep that
@@ -43,9 +47,13 @@ def load_sd_features(conn: sqlite3.Connection) -> pd.DataFrame:
     damage attack option as "best_round_damage" -- a monster's most
     dangerous single attack -- rather than summing every row, which would
     overcount monsters that just have several alternative weapon choices.
+
+    The table names are parameters so M16 can run the same feature
+    derivation over sd_monsters_custom/sd_attacks_custom (identical shape,
+    see ingest_pdf_statblocks.py) without duplicating this logic.
     """
-    monsters = pd.read_sql("SELECT * FROM sd_monsters", conn)
-    attacks = pd.read_sql("SELECT * FROM sd_attacks", conn)
+    monsters = pd.read_sql(f"SELECT * FROM {monsters_table}", conn)
+    attacks = pd.read_sql(f"SELECT * FROM {attacks_table}", conn)
 
     attacks = attacks.assign(round_damage=attacks["num_attacks"] * attacks["avg_damage"])
     per_monster_best = attacks.sort_values("round_damage", ascending=False).groupby(
@@ -384,6 +392,32 @@ def report_lv_models_v2(v1_result: dict, a_result: dict, b_result: dict, n: int 
     )
 
     return "\n".join(lines)
+
+
+def score_against_core_models(
+    custom_df: pd.DataFrame, a_result: dict, b_result: dict
+) -> pd.DataFrame:
+    """M16 balance check: score custom monsters against the core-fit models.
+
+    custom_df must carry the Model A features and a threat_score column
+    (i.e. load_sd_features() over the custom tables, passed through
+    metrics.add_combat_metrics()). Both models were fit on core data only;
+    applying them to a custom monster answers "what LV do these stats look
+    like in core terms" -- e.g. a printed LV 6 whose stats predict 8.3 is
+    hitting above its label.
+    """
+    features = custom_df[LV_MODEL_A_FEATURES].fillna(0)
+    a_predicted = a_result["model"].predict(features)
+    b_predicted = b_result["model"].predict(custom_df[["threat_score"]])
+
+    out = custom_df[["name", "level"]].copy()
+    if "source" in custom_df.columns:
+        out.insert(1, "source", custom_df["source"])
+    out["model_a_lv"] = a_predicted.round(1)
+    out["threat_lv"] = b_predicted.round(1)
+    out["a_delta"] = (a_predicted - custom_df["level"]).round(1)
+    out["b_delta"] = (b_predicted - custom_df["level"]).round(1)
+    return out
 
 
 def load_sim_results() -> pd.DataFrame | None:

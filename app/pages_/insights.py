@@ -23,8 +23,19 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "app"))
 sys.path.insert(0, str(ROOT / "src"))
 
-from common import fit_models, get_connection, load_data  # noqa: E402
-from analysis import difficulty_validation, load_sim_results, lv_model_outliers  # noqa: E402
+from common import (  # noqa: E402
+    fit_models,
+    get_connection,
+    has_custom_data,
+    load_custom_features,
+    load_data,
+)
+from analysis import (  # noqa: E402
+    difficulty_validation,
+    load_sim_results,
+    lv_model_outliers,
+    score_against_core_models,
+)
 
 sd_df, fe_df, pairs = load_data(get_connection())
 models = fit_models(sd_df, pairs)
@@ -240,3 +251,23 @@ st.caption(
     "Full residual tables for every model: reports/lv_model.txt, regenerated "
     "by python src/analysis.py from the same fit functions this page calls."
 )
+
+# ---------------------------------------------------------------------------
+# M16: balance check for local custom data (never renders on the deployed
+# app -- has_custom_data requires the tables AND MONSTERLAB_LOCAL=1)
+# ---------------------------------------------------------------------------
+if has_custom_data(get_connection()):
+    st.subheader("Balance check: custom monsters vs. the core fits")
+    st.caption(
+        "Local-only section (personal-use PDF-intake data). Each custom "
+        "monster's stats are scored by the core-fit Model A and threat "
+        "model: model_a_lv and threat_lv are what those stats would predict "
+        "for a core monster, and the deltas are prediction minus printed LV. "
+        "A printed LV 6 with a_delta +2.3 is hitting like a core LV 8.3."
+    )
+    custom_df = load_custom_features(get_connection())
+    st.dataframe(
+        score_against_core_models(custom_df, models["lv_a"], models["lv_b"]),
+        width="stretch",
+        hide_index=True,
+    )

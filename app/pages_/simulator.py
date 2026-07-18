@@ -17,7 +17,13 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "app"))
 sys.path.insert(0, str(ROOT / "src"))
 
-from common import fit_models, get_connection, load_data  # noqa: E402
+from common import (  # noqa: E402
+    fit_models,
+    get_connection,
+    has_custom_data,
+    load_custom_features,
+    load_data,
+)
 from combat_sim import (  # noqa: E402
     ARMOR_BONUS,
     CLASS_WEAPONS,
@@ -26,13 +32,22 @@ from combat_sim import (  # noqa: E402
     build_pc_manual,
     build_pc_quick,
     build_pc_random,
-    load_monster,
+    monster_from_row,
     run_monte_carlo,
 )
 
 sd_df, fe_df, pairs = load_data(get_connection())
 models = fit_models(sd_df, pairs)
 bonus_fit = models["level_to_bonus"]
+
+# M16: with local custom data present, custom monsters join the dropdown.
+# monster_df rows carry the same best_* columns either way, so the same
+# monster_from_row() builds the Combatant.
+monster_df = sd_df
+if has_custom_data(get_connection()):
+    monster_df = pd.concat(
+        [sd_df, load_custom_features(get_connection())], ignore_index=True, sort=False
+    )
 
 st.subheader("Monte Carlo combat simulator: party vs. a Shadowdark monster")
 st.caption(
@@ -43,7 +58,7 @@ st.caption(
     "LV-to-attack-bonus fit -- see README for the full caveat."
 )
 
-monster_name = st.selectbox("Monster", sorted(sd_df["name"].unique()), key="combat_monster")
+monster_name = st.selectbox("Monster", sorted(monster_df["name"].unique()), key="combat_monster")
 
 mode_col, variance_col = st.columns(2)
 with mode_col:
@@ -160,7 +175,9 @@ if st.button("Run simulation"):
                 for i in range(int(random_size))
             ]
 
-    monster = load_monster(get_connection(), monster_name)
+    monster = monster_from_row(
+        monster_df.loc[monster_df["name"] == monster_name].iloc[0]
+    )
     result = run_monte_carlo(party_factory, monster, int(trials), rng, variance_mode)
 
     st.write(
