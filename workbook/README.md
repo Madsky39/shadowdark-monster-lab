@@ -35,6 +35,11 @@ run it first; if it passes, everything else will find what it needs.
 Do them in order — each notebook leans on the previous one (03 literally reads the
 file 02 saves).
 
+Notebooks 02–03 are an intentional acquisition-and-SQL skills detour using Open5e
+spells; 04 then returns to the main Shadowdark monster-analysis path. The detour keeps
+you from copying an existing pipeline while still giving you a complete small
+acquire-to-store loop.
+
 ## Rules of engagement
 
 - **The asserts are the teacher.** Every exercise ends in a check cell. A failing
