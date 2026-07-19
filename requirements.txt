@@ -4,5 +4,7 @@ scikit-learn==1.9.0
 plotly==6.9.0
 streamlit==1.59.2
 jupyterlab==4.6.1
+scipy==1.18.0
+matplotlib==3.11.1  # workbook/: notebook plots (the app itself plots with plotly)
 pdfplumber==0.11.10  # local-only: src/parse_pdf_statblocks.py; the deployed app never imports it
 pytest==9.1.1
